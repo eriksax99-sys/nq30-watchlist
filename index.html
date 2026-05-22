@@ -602,13 +602,15 @@ async function fetchQuote(sym, key) {
       const result = y?.chart?.result?.[0];
       const rawCloses = result?.indicators?.quote?.[0]?.close ?? [];
       const rawTs     = result?.timestamp ?? [];
-      // Filter out nulls keeping closes and timestamps in sync
-      rawCloses.forEach((c, i) => {
-        if (c != null && !isNaN(c)) {
+      // Use min of both lengths to avoid index mismatches
+      const safeLen = Math.min(rawCloses.length, rawTs.length);
+      for (let i = 0; i < safeLen; i++) {
+        const c = rawCloses[i];
+        if (c != null && !isNaN(c) && rawTs[i]) {
           closesD.push(c);
-          timestampsD.push(rawTs[i] ?? 0);
+          timestampsD.push(rawTs[i]);
         }
-      });
+      }
     }
   } catch(e) { closesD = []; timestampsD = []; }
 
@@ -636,8 +638,18 @@ async function fetchQuote(sym, key) {
     }
     return arr;
   }
+  // Generate evenly-spaced Unix timestamps over the past 2 years
+  function syntheticTimestamps(steps) {
+    const now = Math.floor(Date.now() / 1000);
+    const from = now - 730 * 24 * 3600;
+    return Array.from({length: steps}, (_, i) =>
+      Math.floor(from + (now - from) * (i / (steps - 1))));
+  }
 
-  if (closesD.length < 30)  closesD  = synthetic(lo52, hi52, price, 80);
+  if (closesD.length < 30) {
+    closesD      = synthetic(lo52, hi52, price, 80);
+    timestampsD  = syntheticTimestamps(80);
+  }
   if (closes4h.length < 30) closes4h = synthetic(lo52, hi52, price, 80);
 
   // Derive weekly closes: last close of each 5-day block
