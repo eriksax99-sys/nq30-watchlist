@@ -465,12 +465,25 @@ async function fetchAll() {
       const tfM  = tfSignals(d.closesM,  d.price);
       const tfMap = { '4H': tf4h, 'D': tfD, 'W': tfW, 'M': tfM };
       const active = tfMap[curTF] || tfD;
+
+      // Walk full candle history to find the real last flip dates
+      const bFlipResult = findLastFlip(
+        d.closesD, d.timestampsD || [],
+        (slice, price) => calcBSignalFromCloses(slice, price)
+      );
+      const lFlipResult = findLastFlip(
+        d.closesD, d.timestampsD || [],
+        (slice) => calcLSignalFromCloses(slice)
+      );
+
       return {
           ...d,
           sentiment: calcSentiment(d),
-          bSignal:   active.b,  // tracks selected timeframe for flip detection
+          bSignal:   active.b,
           lSignal:   active.l,
           tf: tfMap,
+          bFlipTsHistoric: bFlipResult.lastFlipTs,  // Unix timestamp of last B flip
+          lFlipTsHistoric: lFlipResult.lastFlipTs,  // Unix timestamp of last L flip
         };
       });
 
@@ -498,36 +511,48 @@ async function fetchAll() {
     const mi = String(cetDate.getMinutes()).padStart(2,'0');
     const flipTs = yy + mm + dd + ' ' + hh + mi;
 
+    const savePromises = [];
     allData.forEach(r => {
       const prev = flipHistory[r.sym] || {};
+
+      // Historically-computed flip dates from walking 2 years of candles
+      const historicBFlip = formatFlipDate(r.bFlipTsHistoric, false);
+      const historicLFlip = formatFlipDate(r.lFlipTsHistoric, false);
+
       const entry = {
         bSignal:   r.bSignal,
         lSignal:   r.lSignal,
-        bFlipTime: prev.bFlipTime || flipTs,
-        lFlipTime: prev.lFlipTime || flipTs,
+        // Always use the historically-computed date — it's derived from real candle data
+        bFlipTime: historicBFlip || prev.bFlipTime || null,
+        lFlipTime: historicLFlip || prev.lFlipTime || null,
         bIsNew:    false,
         lIsNew:    false,
       };
-      // B flip detected
-      if (prev.bSignal && prev.bSignal !== r.bSignal) {
-        entry.bFlipTime = flipTs;
-        entry.bIsNew = true;
-      }
-      // L flip detected
-      if (prev.lSignal && prev.lSignal !== r.lSignal) {
-        entry.lFlipTime = flipTs;
-        entry.lIsNew = true;
-      }
+
+      // Highlight if signal changed since last refresh (live flip)
+      if (prev.bSignal && prev.bSignal !== r.bSignal) entry.bIsNew = true;
+      if (prev.lSignal && prev.lSignal !== r.lSignal) entry.lIsNew = true;
+
+      const changed = !prev.bSignal
+        || entry.bFlipTime !== prev.bFlipTime
+        || entry.lFlipTime !== prev.lFlipTime
+        || entry.bSignal   !== prev.bSignal
+        || entry.lSignal   !== prev.lSignal;
+
       flipHistory[r.sym] = entry;
-      // Attach flip times to the data row for rendering
       r.bFlipTime = entry.bFlipTime;
       r.lFlipTime = entry.lFlipTime;
       r.bIsNew    = entry.bIsNew;
       r.lIsNew    = entry.lIsNew;
-      // bSignal/lSignal on r are already set to daily (tfD) values
+
+      if (changed) {
+        savePromises.push(saveFlipToSupabase(
+          r.sym, entry.bSignal, entry.lSignal,
+          entry.bFlipTime, entry.lFlipTime
+        ));
+      }
     });
-    // Persist flip history
-    try { localStorage.setItem('nq30_flips', JSON.stringify(flipHistory)); } catch(e){}
+    Promise.all(savePromises).catch(e => console.warn('Flip save error:', e));
 
     render();
     renderSummary();
@@ -569,15 +594,23 @@ async function fetchQuote(sym, key) {
   const lo52   = metric?.metric?.['52WeekLow']  ?? null;
   const vol    = quote.v ?? null;
 
-  // Parse daily closes (2 years) → used for D, W, M timeframes
-  let closesD = [];
+  // Parse daily closes + timestamps (2 years) → used for D, W, M timeframes
+  let closesD = [], timestampsD = [];
   try {
     if (yahooDaily?.ok) {
       const y = await yahooDaily.json();
-      closesD = (y?.chart?.result?.[0]?.indicators?.quote?.[0]?.close ?? [])
-        .filter(v => v != null && !isNaN(v));
+      const result = y?.chart?.result?.[0];
+      const rawCloses = result?.indicators?.quote?.[0]?.close ?? [];
+      const rawTs     = result?.timestamp ?? [];
+      // Filter out nulls keeping closes and timestamps in sync
+      rawCloses.forEach((c, i) => {
+        if (c != null && !isNaN(c)) {
+          closesD.push(c);
+          timestampsD.push(rawTs[i] ?? 0);
+        }
+      });
     }
-  } catch(e) { closesD = []; }
+  } catch(e) { closesD = []; timestampsD = []; }
 
   // Parse hourly closes (60 days) → group into 4h bars
   let closes4h = [];
@@ -618,7 +651,7 @@ async function fetchQuote(sym, key) {
   if (closesM.length < 2) closesM.push(...closesD.slice(-21));
 
   return { price, prev, chg, chgPct, hi52, lo52, vol,
-    closes4h, closesD, closesW, closesM,
+    closes4h, closesD, closesW, closesM, timestampsD,
     closes: closesD // keep for backward compat with existing signal fns
   };
 }
@@ -683,6 +716,40 @@ function calcLSignalFromCloses(closes) {
   const diff = Math.abs(smma15 - smma29) / smma29;
   if (diff < 0.001) return 'gray';
   return smma15 > smma29 ? 'gold' : 'blue';
+}
+
+// ── HISTORICAL FLIP DETECTION ────────────────────────────────────────────────
+// Walk every bar in the candle history, detect signal changes, return last flip.
+function findLastFlip(closes, timestamps, signalFn) {
+  let lastSignal = null;
+  let lastFlipTs = null;
+  const warmup = 30; // need at least 30 bars to compute SMMA29
+  for (let i = warmup; i < closes.length; i++) {
+    const slice = closes.slice(0, i + 1);
+    const price = closes[i];
+    const sig = signalFn(slice, price);
+    if (sig === 'neutral' || sig === 'gray') { lastSignal = sig; continue; }
+    if (lastSignal !== null && lastSignal !== sig) {
+      lastFlipTs = timestamps[i];
+    }
+    lastSignal = sig;
+  }
+  return { lastSignal, lastFlipTs };
+}
+
+// Format a Unix timestamp as DDMMYY for historical daily flips,
+// or DDMMYY HHMM for live intraday flips — always in CET.
+function formatFlipDate(unixTs, includeTime) {
+  if (!unixTs) return null;
+  const cetDate = new Date(new Date(unixTs * 1000)
+    .toLocaleString('en-US', { timeZone: 'Europe/Stockholm' }));
+  const dd = String(cetDate.getDate()).padStart(2, '0');
+  const mm = String(cetDate.getMonth() + 1).padStart(2, '0');
+  const yy = String(cetDate.getFullYear()).slice(2);
+  if (!includeTime) return `${dd}${mm}${yy}`;
+  const hh = String(cetDate.getHours()).padStart(2, '0');
+  const mi = String(cetDate.getMinutes()).padStart(2, '0');
+  return `${dd}${mm}${yy} ${hh}${mi}`;
 }
 
 // ── MULTI-TIMEFRAME HELPER ────────────────────────────────────────────────────
