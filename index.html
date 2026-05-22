@@ -576,9 +576,9 @@ async function fetchQuote(sym, key) {
   const [quoteRes, metricRes, yahooDaily, yahooHourly] = await Promise.all([
     fetch(`https://finnhub.io/api/v1/quote?symbol=${sym}&token=${key}`),
     fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${sym}&metric=all&token=${key}`),
-    fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&period1=${from2y}&period2=${toTs}`)
+    fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&period1=${from2y}&period2=${toTs}`)}`)
       .catch(() => null),
-    fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1h&period1=${from60d}&period2=${toTs}`)
+    fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1h&period1=${from60d}&period2=${toTs}`)}`)
       .catch(() => null),
   ]);
 
