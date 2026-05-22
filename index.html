@@ -303,6 +303,13 @@ let curTF      = 'D';
 let countdownTimer = null;
 let secondsLeft    = 0;
 
+// ── TIMEFRAME HELPERS ─────────────────────────────────────────────────────────
+// Defined as functions (not const) so they are hoisted and available everywhere
+function getBFlip(r)  { return curTF==='4H' ? (r.bFlipTime4h||r.bFlipTime) : curTF==='W' ? (r.bFlipTimeW||r.bFlipTime) : curTF==='M' ? (r.bFlipTimeM||r.bFlipTime) : r.bFlipTime; }
+function getLFlip(r)  { return curTF==='4H' ? (r.lFlipTime4h||r.lFlipTime) : curTF==='W' ? (r.lFlipTimeW||r.lFlipTime) : curTF==='M' ? (r.lFlipTimeM||r.lFlipTime) : r.lFlipTime; }
+function getChgPct(r) { return curTF==='4H' ? (r.chgPct4h||r.chgPct) : curTF==='W' ? (r.chgPctW||r.chgPct) : curTF==='M' ? (r.chgPctM||r.chgPct) : r.chgPct; }
+function getTfChg(r)  { return curTF==='4H' ? (r.chg4h||r.chg) : curTF==='W' ? (r.chgW||r.chg) : curTF==='M' ? (r.chgM||r.chg) : r.chg; }
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => { loadFromSupabase(); });
 
@@ -418,16 +425,6 @@ async function loadFromSupabase() {
   }
 }
 
-// ── TIMEFRAME FLIP DATE HELPERS (module scope) ───────────────────────────────
-const getBFlip = r => curTF==='4H' ? (r.bFlipTime4h||r.bFlipTime)
-                    : curTF==='W'  ? (r.bFlipTimeW ||r.bFlipTime)
-                    : curTF==='M'  ? (r.bFlipTimeM ||r.bFlipTime)
-                    : r.bFlipTime;
-const getLFlip = r => curTF==='4H' ? (r.lFlipTime4h||r.lFlipTime)
-                    : curTF==='W'  ? (r.lFlipTimeW ||r.lFlipTime)
-                    : curTF==='M'  ? (r.lFlipTimeM ||r.lFlipTime)
-                    : r.lFlipTime;
-
 // ── RENDER TABLE ──────────────────────────────────────────────────────────────
 function render() {
   let rows = [...allData];
@@ -493,15 +490,9 @@ function render() {
     const lCls   = lSig==='gold'?'l-gold':lSig==='blue'?'l-blue':'l-gray';
     const lLabel = lSig==='gold'?'Gold':lSig==='blue'?'Blue':'Gray';
 
-    // Use timeframe-specific change values
-    const tfChg    = curTF==='4H' ? (r.chg4h||r.chg)
-                   : curTF==='W'  ? (r.chgW||r.chg)
-                   : curTF==='M'  ? (r.chgM||r.chg)
-                   : r.chg;
-    const tfChgPct = curTF==='4H' ? (r.chgPct4h||r.chgPct)
-                   : curTF==='W'  ? (r.chgPctW||r.chgPct)
-                   : curTF==='M'  ? (r.chgPctM||r.chgPct)
-                   : r.chgPct;
+    // Use module-scope timeframe helpers
+    const tfChg    = getTfChg(r);
+    const tfChgPct = getChgPct(r);
     const pc = tfChgPct > 0.05 ? 'chg-pos' : tfChgPct < -0.05 ? 'chg-neg' : 'chg-neu';
     const priceFmt = r.price >= 1000
       ? '$'+r.price.toLocaleString('en-US',{maximumFractionDigits:0})
@@ -553,7 +544,7 @@ function renderSummary() {
   const bear  = allData.filter(r=>r.sentiment==='bear').length;
   const neut  = allData.filter(r=>r.sentiment==='neutral').length;
   const lgold = allData.filter(r=>((r.tf||{})[curTF]||{}).l==='gold').length;
-  const getChgPct = r => curTF==='4H'?(r.chgPct4h||r.chgPct):curTF==='W'?(r.chgPctW||r.chgPct):curTF==='M'?(r.chgPctM||r.chgPct):r.chgPct;
+  // getChgPct is at module scope
   const avg   = allData.length ? allData.reduce((a,r)=>a+getChgPct(r),0)/allData.length : 0;
   const leader  = [...allData].sort((a,b)=>getChgPct(b)-getChgPct(a))[0];
   const laggard = [...allData].sort((a,b)=>getChgPct(a)-getChgPct(b))[0];
