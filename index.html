@@ -117,21 +117,9 @@
   .w52-pct{font-family:var(--mono);font-size:10px;color:var(--muted);min-width:26px;}
   .vol-text{font-family:var(--mono);font-size:11px;color:var(--dim);}
   .sig-text{font-size:11px;color:var(--muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;}
-  .flip-time{display:block;font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:2px;letter-spacing:0.03em;}
-  .flip-time.new{color:var(--amber);}
-  /* Timeframe badge grid */
-  .tf-row{display:flex;gap:3px;align-items:center;justify-content:center;flex-wrap:nowrap;}
-  .tf-box{display:inline-flex;flex-direction:column;align-items:center;gap:1px;}
-  .tf-label{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:0.05em;line-height:1;}
-  .tf-dot{width:28px;height:16px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:0.04em;}
-  /* B timeframe colours */
-  .tf-b-bull{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
-  .tf-b-bear{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);}
-  .tf-b-neut{background:var(--bg3);border:1px solid var(--border);color:var(--dim);}
-  /* L timeframe colours */
-  .tf-l-gold{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
-  .tf-l-blue{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue);}
-  .tf-l-gray{background:var(--bg3);border:1px solid var(--border);color:var(--dim);}
+  .flip-time{display:block;font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:0.03em;}
+  .flip-time.new{color:var(--amber);font-weight:500;}
+
 
   /* Tooltip on column headers */
   .has-tip{position:relative;}
@@ -196,8 +184,8 @@
   <div class="legend">
     <div class="legend-group">
       <span class="legend-title">B:</span>
-      <span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>Bullish — price &gt; EMA, RSI &lt;75</span>
-      <span class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>Bearish — price &lt; EMA, RSI &gt;25</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>Bullish — price above SMMA20</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>Bearish — price below SMMA20</span>
       <span class="legend-item"><span class="legend-dot" style="background:var(--dim)"></span>Neutral</span>
     </div>
     <div class="legend-group">
@@ -255,6 +243,12 @@
     <button class="filter-btn" onclick="setFilter('neutral',this)">◆ Neutral</button>
     <button class="filter-btn" onclick="setFilter('lgold',this)" style="border-color:var(--amber-border);color:var(--amber);">★ L:Gold</button>
     <button class="filter-btn" onclick="setFilter('lblue',this)" style="border-color:var(--blue-border);color:var(--blue);">● L:Blue</button>
+    <select class="sort-select" id="tfSelect" onchange="setTF(this.value)" style="margin-left:0; border-color:var(--accent); color:var(--accent);">
+      <option value="D">Timeframe: Daily</option>
+      <option value="4H">Timeframe: 4H</option>
+      <option value="W">Timeframe: Weekly</option>
+      <option value="M">Timeframe: Monthly</option>
+    </select>
     <select class="sort-select" onchange="setSort(this.value)">
       <option value="">Sort: Default</option>
       <option value="chg_d">% Change ↓</option>
@@ -278,14 +272,15 @@
           <th class="r">52W</th>
           <th class="r" onclick="setSort('mktcap_d')">Mkt Cap</th>
           <th class="c">Trend</th>
-          <th class="c b-col has-tip" data-tip="B = Bullmania Money Line approx. EMA trend + RSI filter. Bullish = price above EMA &amp; RSI below 75.">B</th>
+          <th class="c b-col has-tip" data-tip="B = Bullmania Money Line approx. Price above SMMA20 = Bullish.">B</th>
+          <th class="c" style="font-size:10px;color:var(--green);border-bottom:2px solid var(--green-border);" data-tip="When the B signal last flipped (CET)">B Flip</th>
           <th class="c l-col has-tip" data-tip="L = Larsson Line approx. Gold = SMMA15 above SMMA29 (uptrend). Blue = SMMA15 below SMMA29 (downtrend).">L</th>
-          <th>Signal</th>
+          <th class="c" style="font-size:10px;color:var(--amber);border-bottom:2px solid var(--amber-border);" data-tip="When the L signal last flipped (CET)">L Flip</th>
           <th class="r">Volume</th>
         </tr>
       </thead>
       <tbody id="tbody">
-        <tr class="state-row"><td colspan="11">Enter your Finnhub API key above and click Refresh ↑</td></tr>
+        <tr class="state-row"><td colspan="12">Enter your Finnhub API key above and click Refresh ↑</td></tr>
       </tbody>
     </table>
   </div>
@@ -354,6 +349,7 @@ const TICKERS = [
 let allData = [];
 let curFilter = 'all';
 let curSort = '';
+let curTF = 'D'; // active timeframe: 4H, D, W, M
 let countdownTimer = null;
 let secondsLeft = 0;
 let flipHistory = {}; // { SYM: { bSignal, lSignal, bFlipTime, lFlipTime } }
@@ -396,12 +392,14 @@ async function fetchAll() {
       const tfD  = tfSignals(d.closesD,  d.price);
       const tfW  = tfSignals(d.closesW,  d.price);
       const tfM  = tfSignals(d.closesM,  d.price);
+      const tfMap = { '4H': tf4h, 'D': tfD, 'W': tfW, 'M': tfM };
+      const active = tfMap[curTF] || tfD;
       return {
           ...d,
           sentiment: calcSentiment(d),
-          bSignal:   tfD.b,  // daily is the primary signal
-          lSignal:   tfD.l,
-          tf: { '4H': tf4h, 'D': tfD, 'W': tfW, 'M': tfM },
+          bSignal:   active.b,  // tracks selected timeframe for flip detection
+          lSignal:   active.l,
+          tf: tfMap,
         };
       });
 
@@ -554,19 +552,9 @@ async function fetchQuote(sym, key) {
   };
 }
 
-// ── MULTI-TIMEFRAME SIGNAL HELPER ────────────────────────────────────────────
-// Returns { b, l } for any closes array + current price
-function tfSignals(closes, price) {
-  const b = calcBSignalFromCloses(closes, price);
-  const l = calcLSignalFromCloses(closes);
-  return { b, l };
-}
-
 // ── SMMA (Smoothed Moving Average) ────────────────────────────────────────────
-// Used by Larsson Line: SMMA(n) = (prev_smma*(n-1) + close) / n
 function calcSMMA(closes, period) {
-  if (closes.length < period) return null;
-  // Seed with SMA of first `period` values
+  if (!closes || closes.length < period) return null;
   let smma = closes.slice(0, period).reduce((a,b) => a+b, 0) / period;
   for (let i = period; i < closes.length; i++) {
     smma = (smma * (period - 1) + closes[i]) / period;
@@ -576,7 +564,7 @@ function calcSMMA(closes, period) {
 
 // ── EMA ───────────────────────────────────────────────────────────────────────
 function calcEMA(closes, period) {
-  if (closes.length < period) return null;
+  if (!closes || closes.length < period) return null;
   const k = 2 / (period + 1);
   let ema = closes.slice(0, period).reduce((a,b) => a+b, 0) / period;
   for (let i = period; i < closes.length; i++) {
@@ -587,7 +575,7 @@ function calcEMA(closes, period) {
 
 // ── RSI ───────────────────────────────────────────────────────────────────────
 function calcRSI(closes, period = 14) {
-  if (closes.length < period + 1) return null;
+  if (!closes || closes.length < period + 1) return null;
   let gains = 0, losses = 0;
   for (let i = 1; i <= period; i++) {
     const d = closes[i] - closes[i-1];
@@ -605,18 +593,40 @@ function calcRSI(closes, period = 14) {
 }
 
 // ── B SIGNAL: Bullmania Money Line approximation ───────────────────────────────
-// Pure trend signal: price above SMMA20 = bull, below = bear.
-// RSI override removed — it caused inversions on strong trends (overbought = still bull).
+// Pure trend: price above SMMA20 = bull, below = bear.
 function calcBSignalFromCloses(closes, price) {
   if (!closes || closes.length < 20) return 'neutral';
   const smma20 = calcSMMA(closes, 20);
   if (smma20 == null) return 'neutral';
   return price > smma20 ? 'bull' : 'bear';
 }
+
+// ── L SIGNAL: Larsson Line approximation ──────────────────────────────────────
+// SMMA15 vs SMMA29: gold = uptrend, blue = downtrend, gray = crossing.
+function calcLSignalFromCloses(closes) {
+  if (!closes || closes.length < 15) return 'gray';
+  const period2 = Math.min(29, Math.floor(closes.length * 0.8));
+  const smma15 = calcSMMA(closes, 15);
+  const smma29 = calcSMMA(closes, period2);
+  if (smma15 == null || smma29 == null) return 'gray';
+  const diff = Math.abs(smma15 - smma29) / smma29;
+  if (diff < 0.001) return 'gray';
+  return smma15 > smma29 ? 'gold' : 'blue';
+}
+
+// ── MULTI-TIMEFRAME HELPER ────────────────────────────────────────────────────
+function tfSignals(closes, price) {
+  return {
+    b: calcBSignalFromCloses(closes, price),
+    l: calcLSignalFromCloses(closes),
+  };
+}
+
+// ── WRAPPER SIGNALS (daily, used for flip tracking & overall sentiment) ────────
 function calcBSignal(r) {
   const sig = calcBSignalFromCloses(r.closes, r.price);
   if (sig !== 'neutral') return sig;
-  if (r.chgPct > 0.3)  return 'bull';
+  if (r.chgPct > 0.3) return 'bull';
   if (r.chgPct < -0.3) return 'bear';
   return 'neutral';
 }
@@ -711,19 +721,15 @@ function render() {
     const badgeCls = sent === 'bull' ? 'badge-bull' : sent === 'bear' ? 'badge-bear' : 'badge-neut';
     const badgeLabel = sent === 'bull' ? '▲ BULL' : sent === 'bear' ? '▼ BEAR' : '◆ NEUT';
 
-    // B timeframe grid helper
-    const bBox = (tf, sig) => {
-      const cls = sig==='bull'?'tf-b-bull':sig==='bear'?'tf-b-bear':'tf-b-neut';
-      const lbl = sig==='bull'?'▲':sig==='bear'?'▼':'—';
-      return `<div class="tf-box"><div class="tf-label">${tf}</div><div class="tf-dot ${cls}">${lbl}</div></div>`;
-    };
-    // L timeframe grid helper
-    const lBox = (tf, sig) => {
-      const cls = sig==='gold'?'tf-l-gold':sig==='blue'?'tf-l-blue':'tf-l-gray';
-      const lbl = sig==='gold'?'G':sig==='blue'?'B':'—';
-      return `<div class="tf-box"><div class="tf-label">${tf}</div><div class="tf-dot ${cls}">${lbl}</div></div>`;
-    };
+    // Active timeframe signals
     const tf = r.tf || { '4H':{b:'neutral',l:'gray'}, 'D':{b:'neutral',l:'gray'}, 'W':{b:'neutral',l:'gray'}, 'M':{b:'neutral',l:'gray'} };
+    const activeTF = tf[curTF] || {b:'neutral', l:'gray'};
+    const bSig = activeTF.b;
+    const lSig = activeTF.l;
+    const bCls   = bSig==='bull' ? 'b-bull' : bSig==='bear' ? 'b-bear' : 'b-neut';
+    const bLabel = bSig==='bull' ? 'Bullish' : bSig==='bear' ? 'Bearish' : 'Neutral';
+    const lCls   = lSig==='gold' ? 'l-gold' : lSig==='blue' ? 'l-blue' : 'l-gray';
+    const lLabel = lSig==='gold' ? 'Gold' : lSig==='blue' ? 'Blue' : 'Gray';
 
     const mktFmt = r.mktCapB >= 1000 ? (r.mktCapB/1000).toFixed(1)+'T' : r.mktCapB+'B';
     const volFmt = !r.vol ? '—' : r.vol >= 1e9 ? (r.vol/1e9).toFixed(1)+'B'
@@ -742,15 +748,18 @@ function render() {
       </td>
       <td class="r" style="color:var(--muted);font-family:var(--mono);font-size:12px;">${mktFmt}</td>
       <td class="c"><span class="badge ${badgeCls}">${badgeLabel}</span></td>
+      <td class="c"><span class="${bCls}">${bLabel}</span></td>
       <td class="c">
-        <div class="tf-row">${bBox('4H',tf['4H'].b)}${bBox('D',tf['D'].b)}${bBox('W',tf['W'].b)}${bBox('M',tf['M'].b)}</div>
-        ${r.bFlipTime ? `<span class="flip-time${r.bIsNew?' new':''}">${r.bFlipTime}</span>` : ''}
+        ${r.bFlipTime
+          ? `<span class="flip-time${r.bIsNew?' new':''}" style="font-size:11px;">${r.bFlipTime}</span>`
+          : '<span style="color:var(--dim);font-family:var(--mono);font-size:11px;">—</span>'}
       </td>
+      <td class="c"><span class="${lCls}">${lLabel}</span></td>
       <td class="c">
-        <div class="tf-row">${lBox('4H',tf['4H'].l)}${lBox('D',tf['D'].l)}${lBox('W',tf['W'].l)}${lBox('M',tf['M'].l)}</div>
-        ${r.lFlipTime ? `<span class="flip-time${r.lIsNew?' new':''}">${r.lFlipTime}</span>` : ''}
+        ${r.lFlipTime
+          ? `<span class="flip-time${r.lIsNew?' new':''}" style="font-size:11px;">${r.lFlipTime}</span>`
+          : '<span style="color:var(--dim);font-family:var(--mono);font-size:11px;">—</span>'}
       </td>
-      <td><span class="sig-text">${getSignal(r)}</span></td>
       <td class="r"><span class="vol-text">${volFmt}</span></td>
     </tr>`;
   }).join('');
@@ -802,6 +811,7 @@ function setFilter(f, el) {
   render();
 }
 function setSort(s) { curSort = s; render(); }
+function setTF(tf) { curTF = tf; render(); }
 
 // ── STATUS ────────────────────────────────────────────────────────────────────
 function setStatus(type, msg) {
