@@ -418,6 +418,16 @@ async function loadFromSupabase() {
   }
 }
 
+// ── TIMEFRAME FLIP DATE HELPERS (module scope) ───────────────────────────────
+const getBFlip = r => curTF==='4H' ? (r.bFlipTime4h||r.bFlipTime)
+                    : curTF==='W'  ? (r.bFlipTimeW ||r.bFlipTime)
+                    : curTF==='M'  ? (r.bFlipTimeM ||r.bFlipTime)
+                    : r.bFlipTime;
+const getLFlip = r => curTF==='4H' ? (r.lFlipTime4h||r.lFlipTime)
+                    : curTF==='W'  ? (r.lFlipTimeW ||r.lFlipTime)
+                    : curTF==='M'  ? (r.lFlipTimeM ||r.lFlipTime)
+                    : r.lFlipTime;
+
 // ── RENDER TABLE ──────────────────────────────────────────────────────────────
 function render() {
   let rows = [...allData];
@@ -510,15 +520,7 @@ function render() {
     const badgeCls   = sent==='bull'?'badge-bull':sent==='bear'?'badge-bear':'badge-neut';
     const badgeLabel  = sent==='bull'?'▲ BULL':sent==='bear'?'▼ BEAR':'◆ NEUT';
 
-    // Select flip date matching active timeframe
-    const getBFlip = r => curTF==='4H' ? (r.bFlipTime4h||r.bFlipTime)
-                        : curTF==='W'  ? (r.bFlipTimeW ||r.bFlipTime)
-                        : curTF==='M'  ? (r.bFlipTimeM ||r.bFlipTime)
-                        : r.bFlipTime;
-    const getLFlip = r => curTF==='4H' ? (r.lFlipTime4h||r.lFlipTime)
-                        : curTF==='W'  ? (r.lFlipTimeW ||r.lFlipTime)
-                        : curTF==='M'  ? (r.lFlipTimeM ||r.lFlipTime)
-                        : r.lFlipTime;
+    // Select flip date matching active timeframe (uses module-scope functions)
     const flipCell = (t) => t
       ? `<span class="flip-time" style="font-size:11px;">${t}</span>`
       : `<span style="color:var(--dim);font-family:var(--mono);font-size:11px;">—</span>`;
@@ -580,7 +582,12 @@ function setFilter(f, el) {
   curFilter = f;
   document.querySelectorAll('.filter-btn').forEach(b => {
     b.classList.remove('active','active-bull','active-bear');
-    b.style.color = b.style.color; // reset inline color
+    b.style.background = '';
+    b.style.color = b.dataset.origColor || '';
+  });
+  // Store original color on first use
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    if (!b.dataset.origColor && b.style.color) b.dataset.origColor = b.style.color;
   });
   if (f==='bull' || f==='bear') {
     f==='bull' ? el.classList.add('active-bull') : el.classList.add('active-bear');
@@ -593,7 +600,9 @@ function setFilter(f, el) {
     el.style.color = 'var(--red)';
     el.classList.add('active-bear');
   } else if (f==='triple') {
-    el.classList.add('active'); // active class = teal bg, BLACK text ✓
+    el.classList.add('active');
+    el.style.color = '#000'; // force black text on teal background
+    el.style.background = 'var(--accent)';
   } else {
     el.classList.add('active');
   }
