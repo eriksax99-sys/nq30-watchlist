@@ -101,12 +101,12 @@
   .badge-bear{background:var(--red-bg);border-color:var(--red-border);color:var(--red);}
   .badge-neut{background:var(--bg3);border-color:var(--border);color:var(--muted);}
 
-  /* B column — Bullmania Money Line approximation */
+  /* B column — momentum trend signal (price vs SMMA20) */
   .b-bull{font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;border:1px solid var(--green-border);background:var(--green-bg);color:var(--green);letter-spacing:0.05em;display:inline-block;}
   .b-bear{font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;border:1px solid var(--red-border);background:var(--red-bg);color:var(--red);letter-spacing:0.05em;display:inline-block;}
   .b-neut{font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);letter-spacing:0.05em;display:inline-block;}
 
-  /* L column — Larsson Line approximation */
+  /* L column — dual SMMA trend signal (SMMA15 vs SMMA29) */
   .l-gold{font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;border:1px solid var(--amber-border);background:var(--amber-bg);color:var(--amber);letter-spacing:0.05em;display:inline-block;}
   .l-blue{font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;border:1px solid var(--blue-border);background:var(--blue-bg);color:var(--blue);letter-spacing:0.05em;display:inline-block;}
   .l-gray{font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);letter-spacing:0.05em;display:inline-block;}
@@ -153,14 +153,10 @@
     <div class="header-left">
       <div class="logo">▸ Market Terminal</div>
       <h1>NQ<span>30</span> Watchlist</h1>
-      <div class="header-meta">Nasdaq 100 · Top 30 · Live via Finnhub</div>
+      <div class="header-meta">Nasdaq 100 · Top 30 · Powered by Supabase</div>
     </div>
     <div class="header-right">
-      <div class="api-setup">
-        <label>API KEY</label>
-        <input type="text" id="apiKey" placeholder="your_finnhub_key" autocomplete="off" spellcheck="false">
-      </div>
-      <button class="btn-refresh" id="refreshBtn" onclick="fetchAll()">
+      <button class="btn-refresh" id="refreshBtn" onclick="loadFromSupabase()">
         <span id="refreshIcon">↻</span> Refresh
       </button>
     </div>
@@ -168,7 +164,7 @@
 
   <div class="status-bar">
     <div class="status-dot" id="statusDot"></div>
-    <span id="statusText">Enter your Finnhub API key and click Refresh to load live data</span>
+    <span id="statusText">Loading data from database…</span>
     <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
       <span id="countdown"></span>
       <div class="refresh-ring" id="refreshRing" style="display:none">
@@ -243,6 +239,7 @@
     <button class="filter-btn" onclick="setFilter('neutral',this)">◆ Neutral</button>
     <button class="filter-btn" onclick="setFilter('lgold',this)" style="border-color:var(--amber-border);color:var(--amber);">★ L:Gold</button>
     <button class="filter-btn" onclick="setFilter('lblue',this)" style="border-color:var(--blue-border);color:var(--blue);">● L:Blue</button>
+    <button class="filter-btn" onclick="setFilter('triple',this)" style="border-color:var(--accent);color:var(--accent);font-weight:600;">⚡ Triple Bull</button>
     <select class="sort-select" id="tfSelect" onchange="setTF(this.value)" style="margin-left:0; border-color:var(--accent); color:var(--accent);">
       <option value="D">Timeframe: Daily</option>
       <option value="4H">Timeframe: 4H</option>
@@ -272,298 +269,129 @@
           <th class="r">52W</th>
           <th class="r" onclick="setSort('mktcap_d')">Mkt Cap</th>
           <th class="c">Trend</th>
-          <th class="c b-col has-tip" data-tip="B = Bullmania Money Line approx. Price above SMMA20 = Bullish.">B</th>
-          <th class="c" style="font-size:10px;color:var(--green);border-bottom:2px solid var(--green-border);" data-tip="When the B signal last flipped (CET)">B Flip</th>
-          <th class="c l-col has-tip" data-tip="L = Larsson Line approx. Gold = SMMA15 above SMMA29 (uptrend). Blue = SMMA15 below SMMA29 (downtrend).">L</th>
-          <th class="c" style="font-size:10px;color:var(--amber);border-bottom:2px solid var(--amber-border);" data-tip="When the L signal last flipped (CET)">L Flip</th>
+          <th class="c b-col has-tip" data-tip="B = Momentum signal. Bullish = price above SMMA20. Bearish = price below SMMA20.">B</th>
+          <th class="c has-tip" style="font-size:10px;color:var(--green);border-bottom:2px solid var(--green-border);cursor:pointer;" data-tip="When the B signal last flipped (CET). Click to sort." onclick="setSort('bflip_d')">B Flip <span id="bflipArrow"></span></th>
+          <th class="c l-col has-tip" data-tip="L = Trend signal. Gold = SMMA15 above SMMA29 (uptrend). Blue = SMMA15 below SMMA29 (downtrend).">L</th>
+          <th class="c has-tip" style="font-size:10px;color:var(--amber);border-bottom:2px solid var(--amber-border);cursor:pointer;" data-tip="When the L signal last flipped (CET). Click to sort." onclick="setSort('lflip_d')">L Flip <span id="lflipArrow"></span></th>
           <th class="r">Volume</th>
         </tr>
       </thead>
       <tbody id="tbody">
-        <tr class="state-row"><td colspan="12">Enter your Finnhub API key above and click Refresh ↑</td></tr>
+        <tr class="state-row"><td colspan="12">Loading data from database…</td></tr>
       </tbody>
     </table>
   </div>
 
-  <div class="setup-notice" id="setupNotice">
-    <strong>🔑 How to get your free Finnhub API key:</strong>
-    <ol>
-      <li>Visit <a href="https://finnhub.io" target="_blank">finnhub.io</a> and create a free account (~30 seconds)</li>
-      <li>Copy your API key from the dashboard</li>
-      <li>Paste it into the <code>API KEY</code> field above and click <strong>Refresh</strong></li>
-      <li>Data auto-refreshes every 60 seconds</li>
-    </ol>
-    <br>
-    <strong>📊 Column guide:</strong><br>
-    <strong>B</strong> = Money Line approximation (EMA + RSI). Bullish when price is above the blended EMA and RSI is below 75. Bearish when price is below EMA and RSI is above 25. Based on Ivan's publicly described methodology.<br>
-    <strong>L</strong> = Larsson Line approximation (SMMA 15 vs SMMA 29). Gold = 15-period SMMA above 29-period SMMA (uptrend). Blue = below (downtrend). Gray = crossing/neutral. Based on CTO Larsson's published methodology.<br><br>
-    <em>Both B and L are approximations of proprietary indicators. They replicate the published logic but may differ from the paid originals.</em>
-  </div>
-
   <footer>
-    <span>NQ30 WATCHLIST · POWERED BY FINNHUB.IO</span>
-    <span>B &amp; L ARE APPROXIMATIONS · NOT FINANCIAL ADVICE</span>
+    <span>NQ30 WATCHLIST · POWERED BY SUPABASE + YAHOO FINANCE</span>
+    <span>DATA UPDATES EVERY 30 MIN · NOT FINANCIAL ADVICE</span>
   </footer>
 </div>
 
 <script>
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-// Paste your Finnhub key here to hardcode it (avoids typing every visit)
-const HARDCODED_KEY = 'd881kcpr01qmhakhqm0gd881kcpr01qmhakhqm10';
-const REFRESH_INTERVAL = 60;
-
-// ── SUPABASE CONFIG ───────────────────────────────────────────────────────────
-// Paste your values from Supabase → Settings → API
-const SUPABASE_URL  = 'https://ixcwtfrelsyjjiribpeo.supabase.co';   // e.g. https://xxxx.supabase.co
+const SUPABASE_URL  = 'https://ixcwtfrelsyjjiribpeo.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4Y3d0ZnJlbHN5amppcmlicGVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0Mjk4MzMsImV4cCI6MjA5NTAwNTgzM30.KvvGWXbI91uH7PA-Nbj33BRqEUziXkt1el2a5ihf9Zg';
-
-const TICKERS = [
-  {sym:'MSFT',name:'Microsoft',         mktCapB:3200},
-  {sym:'AAPL',name:'Apple',             mktCapB:4600},
-  {sym:'NVDA',name:'NVIDIA',            mktCapB:5400},
-  {sym:'AMZN',name:'Amazon',            mktCapB:2890},
-  {sym:'META',name:'Meta Platforms',    mktCapB:1500},
-  {sym:'GOOGL',name:'Alphabet',         mktCapB:2300},
-  {sym:'TSLA',name:'Tesla',             mktCapB:1570},
-  {sym:'AVGO',name:'Broadcom',          mktCapB:1980},
-  {sym:'COST',name:'Costco',            mktCapB:448},
-  {sym:'NFLX',name:'Netflix',           mktCapB:548},
-  {sym:'ASML',name:'ASML',             mktCapB:364},
-  {sym:'AMD', name:'AMD',              mktCapB:735},
-  {sym:'CSCO',name:'Cisco',            mktCapB:275},
-  {sym:'ADBE',name:'Adobe',            mktCapB:174},
-  {sym:'PEP', name:'PepsiCo',          mktCapB:202},
-  {sym:'INTC',name:'Intel',            mktCapB:498},
-  {sym:'INTU',name:'Intuit',           mktCapB:87},
-  {sym:'QCOM',name:'Qualcomm',         mktCapB:225},
-  {sym:'HON', name:'Honeywell',        mktCapB:152},
-  {sym:'AMAT',name:'Applied Materials',mktCapB:364},
-  {sym:'ISRG',name:'Intuitive Surgical',mktCapB:207},
-  {sym:'BKNG',name:'Booking Holdings', mktCapB:152},
-  {sym:'TXN', name:'Texas Instruments',mktCapB:181},
-  {sym:'SBUX',name:'Starbucks',        mktCapB:99},
-  {sym:'GILD',name:'Gilead Sciences',  mktCapB:135},
-  {sym:'ADP', name:'ADP',             mktCapB:125},
-  {sym:'VRTX',name:'Vertex Pharma',   mktCapB:134},
-  {sym:'PANW',name:'Palo Alto Networks',mktCapB:95},
-  {sym:'LRCX',name:'Lam Research',    mktCapB:137},
-  {sym:'MU',  name:'Micron',          mktCapB:551},
-];
+const REFRESH_INTERVAL = 30; // seconds between Supabase reads
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
-let allData = [];
-let curFilter = 'all';
-let curSort = '';
-let curTF = 'D'; // active timeframe: 4H, D, W, M
+let allData    = [];
+let curFilter  = 'all';
+let curSort    = '';
+let curTF      = 'D';
 let countdownTimer = null;
-let secondsLeft = 0;
-let flipHistory = {}; // { SYM: { bSignal, lSignal, bFlipTime, lFlipTime } }
+let secondsLeft    = 0;
 
-window.addEventListener('DOMContentLoaded', async () => {
-  const saved = localStorage.getItem('finnhub_key') || HARDCODED_KEY;
-  if (saved) document.getElementById('apiKey').value = saved;
-  // Load flip history — always continue to fetchAll even if Supabase fails
-  try { await loadFlipHistory(); } catch(e) { console.warn('Flip history skipped:', e); }
-  if (saved) fetchAll();
-});
+// ── INIT ──────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => { loadFromSupabase(); });
 
-// ── SUPABASE HELPERS ──────────────────────────────────────────────────────────
-function supabaseConfigured() {
-  return SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON !== 'YOUR_SUPABASE_ANON_KEY';
-}
-
-async function loadFlipHistory() {
-  if (!supabaseConfigured()) {
-    // Fallback: localStorage
-    try {
-      const fh = localStorage.getItem('nq30_flips');
-      if (fh) flipHistory = JSON.parse(fh);
-    } catch(e) { flipHistory = {}; }
-    return;
-  }
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/flip_history?select=*`, {
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      }
-    });
-    if (res.ok) {
-      const rows = await res.json();
-      flipHistory = {};
-      rows.forEach(r => {
-        flipHistory[r.sym] = {
-          bSignal:   r.b_signal,
-          lSignal:   r.l_signal,
-          bFlipTime: r.b_flip_time,
-          lFlipTime: r.l_flip_time,
-        };
-      });
-    }
-  } catch(e) {
-    console.warn('Supabase load failed, using localStorage:', e);
-    try {
-      const fh = localStorage.getItem('nq30_flips');
-      if (fh) flipHistory = JSON.parse(fh);
-    } catch(e2) { flipHistory = {}; }
-  }
-}
-
-async function saveFlipToSupabase(sym, bSignal, lSignal, bFlipTime, lFlipTime) {
-  if (!supabaseConfigured()) {
-    // Fallback: localStorage
-    try { localStorage.setItem('nq30_flips', JSON.stringify(flipHistory)); } catch(e) {}
-    return;
-  }
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/flip_history`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Prefer': 'resolution=merge-duplicates,return=minimal',
-      },
-      body: JSON.stringify({
-        sym, b_signal: bSignal, l_signal: lSignal,
-        b_flip_time: bFlipTime, l_flip_time: lFlipTime,
-        updated_at: new Date().toISOString(),
-      })
-    });
-  } catch(e) {
-    console.warn('Supabase save failed:', e);
-    try { localStorage.setItem('nq30_flips', JSON.stringify(flipHistory)); } catch(e2) {}
-  }
-}
-
-// ── FETCH ─────────────────────────────────────────────────────────────────────
-async function fetchAll() {
-  const key = document.getElementById('apiKey').value.trim();
-  if (!key) { setStatus('error','Please enter your Finnhub API key'); return; }
-  localStorage.setItem('finnhub_key', key);
-
-  const btn = document.getElementById('refreshBtn');
+// ── SUPABASE READ ─────────────────────────────────────────────────────────────
+async function loadFromSupabase() {
+  setStatus('loading', 'Reading from database…');
+  const btn  = document.getElementById('refreshBtn');
   const icon = document.getElementById('refreshIcon');
   btn.disabled = true;
   icon.classList.add('spin');
-  setStatus('loading','Fetching live data…');
   clearTimers();
 
   try {
-    const results = await Promise.allSettled(
-      TICKERS.map(t => fetchQuote(t.sym, key).then(q => ({...t, ...q})))
-    );
+    // Two simple queries — no foreign key join needed
+    const headers = {
+      'apikey':        SUPABASE_ANON,
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'Accept':        'application/json',
+    };
 
-    allData = results
-      .filter(r => r.status === 'fulfilled' && r.value.price != null)
-      .map(r => {
-        const d = r.value;
-        // Compute B+L for all 4 timeframes
-      const tf4h = tfSignals(d.closes4h, d.price);
-      const tfD  = tfSignals(d.closesD,  d.price);
-      const tfW  = tfSignals(d.closesW,  d.price);
-      const tfM  = tfSignals(d.closesM,  d.price);
-      const tfMap = { '4H': tf4h, 'D': tfD, 'W': tfW, 'M': tfM };
-      const active = tfMap[curTF] || tfD;
+    const [priceRes, flipRes] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/price_data?select=*`, { headers }),
+      fetch(`${SUPABASE_URL}/rest/v1/flip_history?select=*`, { headers }),
+    ]);
 
-      // Walk full candle history to find the real last flip dates
-      const bFlipResult = findLastFlip(
-        d.closesD, d.timestampsD || [],
-        (slice, price) => calcBSignalFromCloses(slice, price)
-      );
-      const lFlipResult = findLastFlip(
-        d.closesD, d.timestampsD || [],
-        (slice) => calcLSignalFromCloses(slice)
-      );
+    if (!priceRes.ok) throw new Error(`Supabase HTTP ${priceRes.status}`);
+    if (!flipRes.ok)  throw new Error(`Flip history HTTP ${flipRes.status}`);
 
-      return {
-          ...d,
-          sentiment: calcSentiment(d),
-          bSignal:   active.b,
-          lSignal:   active.l,
-          tf: tfMap,
-          bFlipTsHistoric: bFlipResult.lastFlipTs,  // Unix timestamp of last B flip
-          lFlipTsHistoric: lFlipResult.lastFlipTs,  // Unix timestamp of last L flip
-        };
-      });
+    const rows     = await priceRes.json();
+    const flipRows = await flipRes.json();
 
-    if (!allData.length) throw new Error('No data returned — check your API key');
+    if (!rows.length) {
+      setStatus('error', 'No data yet — Edge Function may still be running. Try refreshing in a minute.');
+      return;
+    }
 
-    // Detect flips and record timestamps in CET
-    const nowCET = new Date().toLocaleString('sv-SE', {timeZone:'Europe/Stockholm'});
-    // Format: "260522 1039" = YYMMDD HHMM
-    const d = new Date();
-    const cetStr = d.toLocaleString('en-GB', {timeZone:'Europe/Stockholm',
-      year:'2-digit', month:'2-digit', day:'2-digit',
-      hour:'2-digit', minute:'2-digit', hour12:false
-    }).replace(',','').replace(/\//g,'').replace(' ','').replace(':','');
-    // cetStr now like "220526 1039" — reformat to YYMMDD HHMM
-    const cetParts = d.toLocaleString('en-GB', {timeZone:'Europe/Stockholm',
-      year:'2-digit', month:'2-digit', day:'2-digit',
-      hour:'2-digit', minute:'2-digit', hour12:false
-    });
-    // Build "YYMMDD HHMM" manually
-    const cetDate = new Date(d.toLocaleString('en-US', {timeZone:'Europe/Stockholm'}));
-    const yy = String(cetDate.getFullYear()).slice(2);
-    const mm = String(cetDate.getMonth()+1).padStart(2,'0');
-    const dd = String(cetDate.getDate()).padStart(2,'0');
-    const hh = String(cetDate.getHours()).padStart(2,'0');
-    const mi = String(cetDate.getMinutes()).padStart(2,'0');
-    const flipTs = yy + mm + dd + ' ' + hh + mi;
+    // Build flip lookup map
+    const flipMap = {};
+    flipRows.forEach(f => { flipMap[f.sym] = f; });
 
-    const savePromises = [];
-    allData.forEach(r => {
-      const prev = flipHistory[r.sym] || {};
-
-      // Historically-computed flip dates from walking 2 years of candles
-      const historicBFlip = formatFlipDate(r.bFlipTsHistoric, false);
-      const historicLFlip = formatFlipDate(r.lFlipTsHistoric, false);
-
-      const entry = {
-        bSignal:   r.bSignal,
-        lSignal:   r.lSignal,
-        // Always use the historically-computed date — it's derived from real candle data
-        bFlipTime: historicBFlip || prev.bFlipTime || null,
-        lFlipTime: historicLFlip || prev.lFlipTime || null,
-        bIsNew:    false,
-        lIsNew:    false,
-      };
-
-      // Highlight if signal changed since last refresh (live flip)
-      if (prev.bSignal && prev.bSignal !== r.bSignal) entry.bIsNew = true;
-      if (prev.lSignal && prev.lSignal !== r.lSignal) entry.lIsNew = true;
-
-      const changed = !prev.bSignal
-        || entry.bFlipTime !== prev.bFlipTime
-        || entry.lFlipTime !== prev.lFlipTime
-        || entry.bSignal   !== prev.bSignal
-        || entry.lSignal   !== prev.lSignal;
-
-      flipHistory[r.sym] = entry;
-      r.bFlipTime = entry.bFlipTime;
-      r.lFlipTime = entry.lFlipTime;
-      r.bIsNew    = entry.bIsNew;
-      r.lIsNew    = entry.lIsNew;
-
-      if (changed) {
-        savePromises.push(saveFlipToSupabase(
-          r.sym, entry.bSignal, entry.lSignal,
-          entry.bFlipTime, entry.lFlipTime
-        ));
-      }
-    });
-    Promise.all(savePromises).catch(e => console.warn('Flip save error:', e));
+    allData = rows.map(r => ({
+      sym:      r.sym,
+      name:     r.name,
+      price:    r.price,
+      chg:      r.chg,
+      chgPct:   r.chg_pct,
+      hi52:     r.hi52,
+      lo52:     r.lo52,
+      vol:      r.vol,
+      mktCapB:  r.mkt_cap_b,
+      bFlipTime: flipMap[r.sym]?.b_flip_time ?? null,
+      lFlipTime: flipMap[r.sym]?.l_flip_time ?? null,
+      tf: {
+        '4H': { b: r.b_4h, l: r.l_4h },
+        'D':  { b: r.b_d,  l: r.l_d  },
+        'W':  { b: r.b_w,  l: r.l_w  },
+        'M':  { b: r.b_m,  l: r.l_m  },
+      },
+      // Trend = independent momentum signal from today's price action + 52w position
+      // This is deliberately different from B (SMMA20) and L (SMMA15/29)
+      sentiment: (function() {
+        const chgPct = r.chg_pct || 0;
+        const pos52  = (r.hi52 && r.lo52 && r.hi52 > r.lo52)
+          ? (r.price - r.lo52) / (r.hi52 - r.lo52) : 0.5;
+        let score = 0;
+        if (chgPct >  1.5) score += 2;
+        else if (chgPct >  0.3) score += 1;
+        else if (chgPct < -1.5) score -= 2;
+        else if (chgPct < -0.3) score -= 1;
+        if (pos52 > 0.75) score += 1;
+        else if (pos52 < 0.3) score -= 1;
+        if (score >= 2) return 'bull';
+        if (score <= -1) return 'bear';
+        return 'neutral';
+      })(),
+      bSignal:   r.b_d,
+      lSignal:   r.l_d,
+    }));
 
     render();
     renderSummary();
-    const now = new Date();
-    setStatus('live', `Live · Updated ${now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})} · ${allData.length}/30 loaded`);
+    const updated = new Date(rows[0]?.updated_at);
+    const cetStr  = updated.toLocaleString('en-GB', {
+      timeZone:'Europe/Stockholm', hour:'2-digit', minute:'2-digit', second:'2-digit'
+    });
+    setStatus('live', `Live · Data as of ${cetStr} CET · ${allData.length}/30 loaded`);
     startCountdown();
+
   } catch(e) {
-    setStatus('error','Error: ' + e.message);
+    setStatus('error', 'Failed to load: ' + e.message);
     console.error(e);
   } finally {
     btn.disabled = false;
@@ -571,328 +399,95 @@ async function fetchAll() {
   }
 }
 
-async function fetchQuote(sym, key) {
-  const toTs   = Math.floor(Date.now() / 1000);
-  const from2y = toTs - 730 * 24 * 3600;  // 2 years daily → D, W, M signals
-  const from60d= toTs -  60 * 24 * 3600;  // 60 days hourly → 4H signal
-
-  const [quoteRes, metricRes, yahooDaily, yahooHourly] = await Promise.all([
-    fetch(`https://finnhub.io/api/v1/quote?symbol=${sym}&token=${key}`),
-    fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${sym}&metric=all&token=${key}`),
-    fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&period1=${from2y}&period2=${toTs}`)}`)
-      .catch(() => null),
-    fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1h&period1=${from60d}&period2=${toTs}`)}`)
-      .catch(() => null),
-  ]);
-
-  const quote  = await quoteRes.json();
-  const metric = await metricRes.json();
-  if (!quote.c) return { price: null };
-
-  const price  = quote.c;
-  const prev   = quote.pc;
-  const chg    = quote.d  ?? (price - prev);
-  const chgPct = quote.dp ?? ((chg / prev) * 100);
-  const hi52   = metric?.metric?.['52WeekHigh'] ?? null;
-  const lo52   = metric?.metric?.['52WeekLow']  ?? null;
-  const vol    = quote.v ?? null;
-
-  // Parse daily closes + timestamps (2 years) → used for D, W, M timeframes
-  let closesD = [], timestampsD = [];
-  try {
-    if (yahooDaily?.ok) {
-      const y = await yahooDaily.json();
-      const result = y?.chart?.result?.[0];
-      const rawCloses = result?.indicators?.quote?.[0]?.close ?? [];
-      const rawTs     = result?.timestamp ?? [];
-      // Use min of both lengths to avoid index mismatches
-      const safeLen = Math.min(rawCloses.length, rawTs.length);
-      for (let i = 0; i < safeLen; i++) {
-        const c = rawCloses[i];
-        if (c != null && !isNaN(c) && rawTs[i]) {
-          closesD.push(c);
-          timestampsD.push(rawTs[i]);
-        }
-      }
-    }
-  } catch(e) { closesD = []; timestampsD = []; }
-
-  // Parse hourly closes (60 days) → group into 4h bars
-  let closes4h = [];
-  try {
-    if (yahooHourly?.ok) {
-      const y = await yahooHourly.json();
-      const raw = (y?.chart?.result?.[0]?.indicators?.quote?.[0]?.close ?? [])
-        .filter(v => v != null && !isNaN(v));
-      // Group into 4h bars (take every 4th close)
-      for (let i = 3; i < raw.length; i += 4) closes4h.push(raw[i]);
-    }
-  } catch(e) { closes4h = []; }
-
-  // Synthetic fallback if Yahoo blocked (uses 52w range to build shaped path)
-  function synthetic(lo52, hi52, price, steps=80) {
-    const lo = lo52 ?? price * 0.7;
-    const hi = hi52 ?? price * 1.3;
-    const mid = (lo + hi) / 2;
-    const arr = [];
-    for (let i = 0; i < steps; i++) {
-      const t = i / (steps - 1);
-      arr.push(mid + (price - mid) * Math.pow(t, 0.7));
-    }
-    return arr;
-  }
-  // Generate evenly-spaced Unix timestamps over the past 2 years
-  function syntheticTimestamps(steps) {
-    const now = Math.floor(Date.now() / 1000);
-    const from = now - 730 * 24 * 3600;
-    return Array.from({length: steps}, (_, i) =>
-      Math.floor(from + (now - from) * (i / (steps - 1))));
-  }
-
-  if (closesD.length < 30) {
-    closesD      = synthetic(lo52, hi52, price, 80);
-    timestampsD  = syntheticTimestamps(80);
-  }
-  if (closes4h.length < 30) closes4h = synthetic(lo52, hi52, price, 80);
-
-  // Derive weekly closes: last close of each 5-day block
-  const closesW = [];
-  for (let i = 4; i < closesD.length; i += 5) closesW.push(closesD[i]);
-
-  // Derive monthly closes: last close of each 21-day block
-  const closesM = [];
-  for (let i = 20; i < closesD.length; i += 21) closesM.push(closesD[i]);
-  // Ensure monthly has at least current price as last bar
-  if (closesM.length < 2) closesM.push(...closesD.slice(-21));
-
-  return { price, prev, chg, chgPct, hi52, lo52, vol,
-    closes4h, closesD, closesW, closesM, timestampsD,
-    closes: closesD // keep for backward compat with existing signal fns
-  };
-}
-
-// ── SMMA (Smoothed Moving Average) ────────────────────────────────────────────
-function calcSMMA(closes, period) {
-  if (!closes || closes.length < period) return null;
-  let smma = closes.slice(0, period).reduce((a,b) => a+b, 0) / period;
-  for (let i = period; i < closes.length; i++) {
-    smma = (smma * (period - 1) + closes[i]) / period;
-  }
-  return smma;
-}
-
-// ── EMA ───────────────────────────────────────────────────────────────────────
-function calcEMA(closes, period) {
-  if (!closes || closes.length < period) return null;
-  const k = 2 / (period + 1);
-  let ema = closes.slice(0, period).reduce((a,b) => a+b, 0) / period;
-  for (let i = period; i < closes.length; i++) {
-    ema = closes[i] * k + ema * (1 - k);
-  }
-  return ema;
-}
-
-// ── RSI ───────────────────────────────────────────────────────────────────────
-function calcRSI(closes, period = 14) {
-  if (!closes || closes.length < period + 1) return null;
-  let gains = 0, losses = 0;
-  for (let i = 1; i <= period; i++) {
-    const d = closes[i] - closes[i-1];
-    if (d > 0) gains += d; else losses -= d;
-  }
-  let avgGain = gains / period;
-  let avgLoss = losses / period;
-  for (let i = period + 1; i < closes.length; i++) {
-    const d = closes[i] - closes[i-1];
-    avgGain = (avgGain * (period-1) + Math.max(d,0)) / period;
-    avgLoss = (avgLoss * (period-1) + Math.max(-d,0)) / period;
-  }
-  if (avgLoss === 0) return 100;
-  return 100 - 100 / (1 + avgGain / avgLoss);
-}
-
-// ── B SIGNAL: Bullmania Money Line approximation ───────────────────────────────
-// Pure trend: price above SMMA20 = bull, below = bear.
-function calcBSignalFromCloses(closes, price) {
-  if (!closes || closes.length < 20) return 'neutral';
-  const smma20 = calcSMMA(closes, 20);
-  if (smma20 == null) return 'neutral';
-  return price > smma20 ? 'bull' : 'bear';
-}
-
-// ── L SIGNAL: Larsson Line approximation ──────────────────────────────────────
-// SMMA15 vs SMMA29: gold = uptrend, blue = downtrend, gray = crossing.
-function calcLSignalFromCloses(closes) {
-  if (!closes || closes.length < 15) return 'gray';
-  const period2 = Math.min(29, Math.floor(closes.length * 0.8));
-  const smma15 = calcSMMA(closes, 15);
-  const smma29 = calcSMMA(closes, period2);
-  if (smma15 == null || smma29 == null) return 'gray';
-  const diff = Math.abs(smma15 - smma29) / smma29;
-  if (diff < 0.001) return 'gray';
-  return smma15 > smma29 ? 'gold' : 'blue';
-}
-
-// ── HISTORICAL FLIP DETECTION ────────────────────────────────────────────────
-// Walk every bar in the candle history, detect signal changes, return last flip.
-function findLastFlip(closes, timestamps, signalFn) {
-  let lastSignal = null;
-  let lastFlipTs = null;
-  const warmup = 30; // need at least 30 bars to compute SMMA29
-  for (let i = warmup; i < closes.length; i++) {
-    const slice = closes.slice(0, i + 1);
-    const price = closes[i];
-    const sig = signalFn(slice, price);
-    if (sig === 'neutral' || sig === 'gray') { lastSignal = sig; continue; }
-    if (lastSignal !== null && lastSignal !== sig) {
-      lastFlipTs = timestamps[i];
-    }
-    lastSignal = sig;
-  }
-  return { lastSignal, lastFlipTs };
-}
-
-// Format a Unix timestamp as DDMMYY for historical daily flips,
-// or DDMMYY HHMM for live intraday flips — always in CET.
-function formatFlipDate(unixTs, includeTime) {
-  if (!unixTs) return null;
-  const cetDate = new Date(new Date(unixTs * 1000)
-    .toLocaleString('en-US', { timeZone: 'Europe/Stockholm' }));
-  const dd = String(cetDate.getDate()).padStart(2, '0');
-  const mm = String(cetDate.getMonth() + 1).padStart(2, '0');
-  const yy = String(cetDate.getFullYear()).slice(2);
-  if (!includeTime) return `${dd}${mm}${yy}`;
-  const hh = String(cetDate.getHours()).padStart(2, '0');
-  const mi = String(cetDate.getMinutes()).padStart(2, '0');
-  return `${dd}${mm}${yy} ${hh}${mi}`;
-}
-
-// ── MULTI-TIMEFRAME HELPER ────────────────────────────────────────────────────
-function tfSignals(closes, price) {
-  return {
-    b: calcBSignalFromCloses(closes, price),
-    l: calcLSignalFromCloses(closes),
-  };
-}
-
-// ── WRAPPER SIGNALS (daily, used for flip tracking & overall sentiment) ────────
-function calcBSignal(r) {
-  const sig = calcBSignalFromCloses(r.closes, r.price);
-  if (sig !== 'neutral') return sig;
-  if (r.chgPct > 0.3) return 'bull';
-  if (r.chgPct < -0.3) return 'bear';
-  return 'neutral';
-}
-
-// ── L SIGNAL: Larsson Line approximation ──────────────────────────────────────
-// Primary: SMMA15 vs SMMA29 from candle data
-// Fallback: 52w position + trend proxy
-function calcLSignal(r) {
-  const { closes, price, hi52, lo52, chgPct } = r;
-
-  // If we have enough candle data, compute proper SMMAs
-  if (closes && closes.length >= 30) {
-    const smma15 = calcSMMA(closes, 15);
-    const smma29 = calcSMMA(closes, 29);
-    if (smma15 != null && smma29 != null) {
-      const diff = Math.abs(smma15 - smma29) / smma29;
-      if (diff < 0.001) return 'gray';
-      return smma15 > smma29 ? 'gold' : 'blue';
-    }
-  }
-
-  // Fallback: use 52w position as trend proxy
-  // L Gold = higher lows / uptrend = price well above 52w low
-  const pos52 = (hi52 && lo52 && hi52 > lo52)
-    ? (price - lo52) / (hi52 - lo52) : null;
-
-  if (pos52 !== null) {
-    if (pos52 > 0.6) return 'gold';  // In upper 40% of 52w range = uptrend
-    if (pos52 < 0.4) return 'blue';  // In lower 40% of 52w range = downtrend
-    return 'gray';                    // Middle 20% = crossing/neutral
-  }
-
-  // No data at all: use momentum
-  if (chgPct > 1)  return 'gold';
-  if (chgPct < -1) return 'blue';
-  return 'gray';
-}
-
-// ── OVERALL SENTIMENT ─────────────────────────────────────────────────────────
-function calcSentiment(r) {
-  if (!r.price) return 'neutral';
-  const pos52 = (r.hi52 && r.lo52 && r.hi52 > r.lo52)
-    ? (r.price - r.lo52) / (r.hi52 - r.lo52) : 0.5;
-  let score = 0;
-  if (r.chgPct >  1.5) score += 2;
-  else if (r.chgPct >  0.3) score += 1;
-  else if (r.chgPct < -1.5) score -= 2;
-  else if (r.chgPct < -0.3) score -= 1;
-  if (pos52 > 0.75) score += 1;
-  else if (pos52 < 0.3) score -= 1;
-  if (score >= 2) return 'bull';
-  if (score <= -1) return 'bear';
-  return 'neutral';
-}
-
-// ── RENDER ────────────────────────────────────────────────────────────────────
+// ── RENDER TABLE ──────────────────────────────────────────────────────────────
 function render() {
   let rows = [...allData];
 
-  if (curFilter === 'bull')   rows = rows.filter(r => r.sentiment === 'bull');
-  else if (curFilter === 'bear')  rows = rows.filter(r => r.sentiment === 'bear');
+  // Filter
+  if (curFilter === 'bull')    rows = rows.filter(r => r.sentiment === 'bull');
+  else if (curFilter === 'bear')    rows = rows.filter(r => r.sentiment === 'bear');
   else if (curFilter === 'neutral') rows = rows.filter(r => r.sentiment === 'neutral');
-  else if (curFilter === 'lgold') rows = rows.filter(r => r.lSignal === 'gold');
-  else if (curFilter === 'lblue') rows = rows.filter(r => r.lSignal === 'blue');
+  else if (curFilter === 'lgold')   rows = rows.filter(r => r.lSignal === 'gold');
+  else if (curFilter === 'lblue')   rows = rows.filter(r => r.lSignal === 'blue');
+  else if (curFilter === 'triple') {
+    // Triple Bull: Trend=Bull AND B=Bullish AND L=Gold
+    rows = rows.filter(r =>
+      r.sentiment === 'bull' &&
+      r.bSignal   === 'bull' &&
+      r.lSignal   === 'gold'
+    );
+    // Auto-sort: most recent B flip first, L flip as tiebreaker
+    rows.sort((a, b) => {
+      const bDiff = parseDateStr(b.bFlipTime) - parseDateStr(a.bFlipTime);
+      if (bDiff !== 0) return bDiff;
+      return parseDateStr(b.lFlipTime) - parseDateStr(a.lFlipTime);
+    });
+  }
 
-  if (curSort === 'chg_d')    rows.sort((a,b) => (b.chgPct||0)-(a.chgPct||0));
-  else if (curSort === 'chg_a')   rows.sort((a,b) => (a.chgPct||0)-(b.chgPct||0));
-  else if (curSort === 'price_d') rows.sort((a,b) => (b.price||0)-(a.price||0));
-  else if (curSort === 'price_a') rows.sort((a,b) => (a.price||0)-(b.price||0));
-  else if (curSort === 'az')      rows.sort((a,b) => a.sym.localeCompare(b.sym));
-  else if (curSort === 'mktcap_d') rows.sort((a,b) => (b.mktCapB||0)-(a.mktCapB||0));
+  // Sort (only if not triple — triple has its own sort)
+  if (curFilter !== 'triple') {
+    if (curSort === 'chg_d')          rows.sort((a,b) => (b.chgPct||0)-(a.chgPct||0));
+    else if (curSort === 'chg_a')     rows.sort((a,b) => (a.chgPct||0)-(b.chgPct||0));
+    else if (curSort === 'price_d')   rows.sort((a,b) => (b.price||0)-(a.price||0));
+    else if (curSort === 'price_a')   rows.sort((a,b) => (a.price||0)-(b.price||0));
+    else if (curSort === 'az')        rows.sort((a,b) => a.sym.localeCompare(b.sym));
+    else if (curSort === 'mktcap_d')  rows.sort((a,b) => (b.mktCapB||0)-(a.mktCapB||0));
+    else if (curSort === 'bflip_d')   rows.sort((a,b) => parseDateStr(b.bFlipTime) - parseDateStr(a.bFlipTime));
+    else if (curSort === 'bflip_a')   rows.sort((a,b) => parseDateStr(a.bFlipTime) - parseDateStr(b.bFlipTime));
+    else if (curSort === 'lflip_d')   rows.sort((a,b) => parseDateStr(b.lFlipTime) - parseDateStr(a.lFlipTime));
+    else if (curSort === 'lflip_a')   rows.sort((a,b) => parseDateStr(a.lFlipTime) - parseDateStr(b.lFlipTime));
+  }
+
+  // Update sort arrow indicators
+  document.getElementById('bflipArrow').textContent =
+    curSort==='bflip_d' ? '↓' : curSort==='bflip_a' ? '↑' : '';
+  document.getElementById('lflipArrow').textContent =
+    curSort==='lflip_d' ? '↓' : curSort==='lflip_a' ? '↑' : '';
 
   const tbody = document.getElementById('tbody');
   if (!rows.length) {
-    tbody.innerHTML = `<tr class="state-row"><td colspan="11">No stocks match this filter.</td></tr>`;
+    tbody.innerHTML = `<tr class="state-row"><td colspan="12">No stocks match this filter.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = rows.map(r => {
+    const tf       = r.tf || {};
+    const activeTF = tf[curTF] || {b:'neutral', l:'gray'};
+    const bSig     = activeTF.b || 'neutral';
+    const lSig     = activeTF.l || 'gray';
+
+    const bCls   = bSig==='bull'?'b-bull':bSig==='bear'?'b-bear':'b-neut';
+    const bLabel = bSig==='bull'?'Bullish':bSig==='bear'?'Bearish':'Neutral';
+    const lCls   = lSig==='gold'?'l-gold':lSig==='blue'?'l-blue':'l-gray';
+    const lLabel = lSig==='gold'?'Gold':lSig==='blue'?'Blue':'Gray';
+
     const pc = r.chgPct > 0.05 ? 'chg-pos' : r.chgPct < -0.05 ? 'chg-neg' : 'chg-neu';
+    const priceFmt = r.price >= 1000
+      ? '$'+r.price.toLocaleString('en-US',{maximumFractionDigits:0})
+      : '$'+Number(r.price).toFixed(2);
     const chgSign = r.chg >= 0 ? '+' : '';
     const pctSign = r.chgPct >= 0 ? '+' : '';
-    const priceFmt = r.price >= 1000
-      ? '$' + r.price.toLocaleString('en-US',{maximumFractionDigits:0})
-      : '$' + r.price.toFixed(2);
 
-    const pos52 = (r.hi52 && r.lo52 && r.hi52 > r.lo52)
-      ? Math.max(0, Math.min(1, (r.price - r.lo52) / (r.hi52 - r.lo52))) : 0.5;
-    const barColor = pos52 > 0.7 ? 'var(--green)' : pos52 < 0.3 ? 'var(--red)' : 'var(--accent)';
+    const pos52 = (r.hi52 && r.lo52 && r.hi52>r.lo52)
+      ? Math.max(0,Math.min(1,(r.price-r.lo52)/(r.hi52-r.lo52))) : 0.5;
+    const barColor = pos52>0.7?'var(--green)':pos52<0.3?'var(--red)':'var(--accent)';
+    const mktFmt   = r.mktCapB>=1000?(r.mktCapB/1000).toFixed(1)+'T':r.mktCapB+'B';
+    const volFmt   = !r.vol?'—':r.vol>=1e9?(r.vol/1e9).toFixed(1)+'B'
+      :r.vol>=1e6?(r.vol/1e6).toFixed(1)+'M':(r.vol/1e3).toFixed(0)+'K';
 
     const sent = r.sentiment;
-    const badgeCls = sent === 'bull' ? 'badge-bull' : sent === 'bear' ? 'badge-bear' : 'badge-neut';
-    const badgeLabel = sent === 'bull' ? '▲ BULL' : sent === 'bear' ? '▼ BEAR' : '◆ NEUT';
+    const badgeCls   = sent==='bull'?'badge-bull':sent==='bear'?'badge-bear':'badge-neut';
+    const badgeLabel  = sent==='bull'?'▲ BULL':sent==='bear'?'▼ BEAR':'◆ NEUT';
 
-    // Active timeframe signals
-    const tf = r.tf || { '4H':{b:'neutral',l:'gray'}, 'D':{b:'neutral',l:'gray'}, 'W':{b:'neutral',l:'gray'}, 'M':{b:'neutral',l:'gray'} };
-    const activeTF = tf[curTF] || {b:'neutral', l:'gray'};
-    const bSig = activeTF.b;
-    const lSig = activeTF.l;
-    const bCls   = bSig==='bull' ? 'b-bull' : bSig==='bear' ? 'b-bear' : 'b-neut';
-    const bLabel = bSig==='bull' ? 'Bullish' : bSig==='bear' ? 'Bearish' : 'Neutral';
-    const lCls   = lSig==='gold' ? 'l-gold' : lSig==='blue' ? 'l-blue' : 'l-gray';
-    const lLabel = lSig==='gold' ? 'Gold' : lSig==='blue' ? 'Blue' : 'Gray';
-
-    const mktFmt = r.mktCapB >= 1000 ? (r.mktCapB/1000).toFixed(1)+'T' : r.mktCapB+'B';
-    const volFmt = !r.vol ? '—' : r.vol >= 1e9 ? (r.vol/1e9).toFixed(1)+'B'
-      : r.vol >= 1e6 ? (r.vol/1e6).toFixed(1)+'M' : (r.vol/1e3).toFixed(0)+'K';
+    const flipCell = (t) => t
+      ? `<span class="flip-time" style="font-size:11px;">${t}</span>`
+      : `<span style="color:var(--dim);font-family:var(--mono);font-size:11px;">—</span>`;
 
     return `<tr>
       <td><div class="ticker-sym">${r.sym}</div><div class="ticker-name">${r.name}</div></td>
       <td class="r"><span class="price-val">${priceFmt}</span></td>
-      <td class="r"><span class="${pc}">${chgSign}${r.chg.toFixed(2)}</span></td>
-      <td class="r"><span class="${pc}">${pctSign}${r.chgPct.toFixed(2)}%</span></td>
+      <td class="r"><span class="${pc}">${chgSign}${Number(r.chg).toFixed(2)}</span></td>
+      <td class="r"><span class="${pc}">${pctSign}${Number(r.chgPct).toFixed(2)}%</span></td>
       <td class="r">
         <div class="w52-bar">
           <span class="w52-pct">${Math.round(pos52*100)}%</span>
@@ -902,59 +497,44 @@ function render() {
       <td class="r" style="color:var(--muted);font-family:var(--mono);font-size:12px;">${mktFmt}</td>
       <td class="c"><span class="badge ${badgeCls}">${badgeLabel}</span></td>
       <td class="c"><span class="${bCls}">${bLabel}</span></td>
-      <td class="c">
-        ${r.bFlipTime
-          ? `<span class="flip-time${r.bIsNew?' new':''}" style="font-size:11px;">${r.bFlipTime}</span>`
-          : '<span style="color:var(--dim);font-family:var(--mono);font-size:11px;">—</span>'}
-      </td>
+      <td class="c">${flipCell(r.bFlipTime)}</td>
       <td class="c"><span class="${lCls}">${lLabel}</span></td>
-      <td class="c">
-        ${r.lFlipTime
-          ? `<span class="flip-time${r.lIsNew?' new':''}" style="font-size:11px;">${r.lFlipTime}</span>`
-          : '<span style="color:var(--dim);font-family:var(--mono);font-size:11px;">—</span>'}
-      </td>
+      <td class="c">${flipCell(r.lFlipTime)}</td>
       <td class="r"><span class="vol-text">${volFmt}</span></td>
     </tr>`;
   }).join('');
 }
 
-function getSignal(r) {
-  // Combine B and L for a richer signal
-  if (r.bSignal === 'bull' && r.lSignal === 'gold') return 'Strong uptrend confirmed';
-  if (r.bSignal === 'bear' && r.lSignal === 'blue') return 'Strong downtrend confirmed';
-  if (r.bSignal === 'bull' && r.lSignal === 'blue') return 'Short-term bull, long-term caution';
-  if (r.bSignal === 'bear' && r.lSignal === 'gold') return 'Pullback in uptrend';
-  if (r.chgPct >  4) return 'Strong momentum surge';
-  if (r.chgPct >  2) return 'Solid upside session';
-  if (r.chgPct < -4) return 'Heavy selling pressure';
-  if (r.chgPct < -2) return 'Notable pullback';
-  const pos52 = (r.hi52 && r.lo52 && r.hi52>r.lo52) ? (r.price-r.lo52)/(r.hi52-r.lo52) : 0.5;
-  if (pos52 > 0.9) return 'Near 52-week high';
-  if (pos52 < 0.15) return 'Near 52-week low';
-  return 'Consolidating';
-}
-
+// ── SUMMARY CARDS ─────────────────────────────────────────────────────────────
 function renderSummary() {
-  const bull  = allData.filter(r => r.sentiment === 'bull').length;
-  const bear  = allData.filter(r => r.sentiment === 'bear').length;
-  const neut  = allData.filter(r => r.sentiment === 'neutral').length;
-  const lgold = allData.filter(r => r.lSignal === 'gold').length;
-  const avg   = allData.reduce((a,r) => a + (r.chgPct||0), 0) / allData.length;
-  const leader  = [...allData].sort((a,b) => b.chgPct-a.chgPct)[0];
-  const laggard = [...allData].sort((a,b) => a.chgPct-b.chgPct)[0];
+  const bull  = allData.filter(r=>r.sentiment==='bull').length;
+  const bear  = allData.filter(r=>r.sentiment==='bear').length;
+  const neut  = allData.filter(r=>r.sentiment==='neutral').length;
+  const lgold = allData.filter(r=>r.lSignal==='gold').length;
+  const avg   = allData.length ? allData.reduce((a,r)=>a+(r.chgPct||0),0)/allData.length : 0;
+  const leader  = [...allData].sort((a,b)=>b.chgPct-a.chgPct)[0];
+  const laggard = [...allData].sort((a,b)=>a.chgPct-b.chgPct)[0];
 
   document.getElementById('sBull').textContent    = bull;
   document.getElementById('sBear').textContent    = bear;
   document.getElementById('sNeut').textContent    = neut;
   document.getElementById('sLGold').textContent   = lgold;
   const avgEl = document.getElementById('sAvg');
-  avgEl.textContent = (avg>=0?'+':'') + avg.toFixed(2) + '%';
-  avgEl.className = 'sum-val ' + (avg>0?'green':avg<0?'red':'amber');
-  document.getElementById('sLeader').textContent  = leader  ? `${leader.sym} +${leader.chgPct.toFixed(2)}%` : '—';
-  document.getElementById('sLaggard').textContent = laggard ? `${laggard.sym} ${laggard.chgPct.toFixed(2)}%` : '—';
+  avgEl.textContent = (avg>=0?'+':'')+avg.toFixed(2)+'%';
+  avgEl.className   = 'sum-val '+(avg>0?'green':avg<0?'red':'amber');
+  document.getElementById('sLeader').textContent  = leader  ?`${leader.sym} +${Number(leader.chgPct).toFixed(2)}%`:'—';
+  document.getElementById('sLaggard').textContent = laggard ?`${laggard.sym} ${Number(laggard.chgPct).toFixed(2)}%`:'—';
 }
 
-// ── FILTER / SORT ─────────────────────────────────────────────────────────────
+// ── CONTROLS ──────────────────────────────────────────────────────────────────
+// Parse DDMMYY → sortable integer YYYYMMDD (higher = more recent)
+function parseDateStr(s) {
+  if (!s || s.length !== 6) return 0;
+  return (parseInt(s.slice(4,6)) + 2000) * 10000
+       + parseInt(s.slice(2,4)) * 100
+       + parseInt(s.slice(0,2));
+}
+
 function setFilter(f, el) {
   curFilter = f;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active','active-bull','active-bear'));
@@ -963,12 +543,20 @@ function setFilter(f, el) {
   else el.classList.add('active');
   render();
 }
-function setSort(s) { curSort = s; render(); }
-function setTF(tf) { curTF = tf; render(); }
+function setSort(s) {
+  // Toggle direction if clicking the same column again
+  if (s === 'bflip_d' && curSort === 'bflip_d') s = 'bflip_a';
+  else if (s === 'bflip_a' && curSort === 'bflip_a') s = 'bflip_d';
+  else if (s === 'lflip_d' && curSort === 'lflip_d') s = 'lflip_a';
+  else if (s === 'lflip_a' && curSort === 'lflip_a') s = 'lflip_d';
+  curSort = s;
+  render();
+}
+function setTF(tf)   { curTF = tf; render(); }
 
 // ── STATUS ────────────────────────────────────────────────────────────────────
 function setStatus(type, msg) {
-  document.getElementById('statusDot').className = 'status-dot' + (type==='live'?' live':type==='error'?' error':'');
+  document.getElementById('statusDot').className = 'status-dot'+(type==='live'?' live':type==='error'?' error':'');
   document.getElementById('statusText').textContent = msg;
 }
 
@@ -980,14 +568,14 @@ function startCountdown() {
   countdownTimer = setInterval(() => {
     secondsLeft--;
     updateRing();
-    if (secondsLeft <= 0) { clearTimers(); fetchAll(); }
+    if (secondsLeft <= 0) { clearTimers(); loadFromSupabase(); }
   }, 1000);
 }
 function updateRing() {
   document.getElementById('ringProg').style.strokeDashoffset =
-    69.1 - (69.1 * (1 - secondsLeft / REFRESH_INTERVAL));
+    69.1 - (69.1*(1-secondsLeft/REFRESH_INTERVAL));
   const cd = document.getElementById('countdown');
-  cd.textContent = secondsLeft + 's';
+  cd.textContent = secondsLeft+'s';
   cd.style.cssText = 'font-family:var(--mono);font-size:10px;color:var(--muted);';
 }
 function clearTimers() {
