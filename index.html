@@ -152,8 +152,8 @@
   <header>
     <div class="header-left">
       <div class="logo">▸ Market Terminal</div>
-      <h1>NQ<span>30</span> Watchlist</h1>
-      <div class="header-meta">Nasdaq 100 · Top 30 · Powered by Supabase</div>
+      <h1>NQ<span style="color:var(--accent)">100</span> Watchlist</h1>
+      <div class="header-meta">Nasdaq 100 · Powered by Supabase</div>
     </div>
     <div class="header-right">
       <button class="btn-refresh" id="refreshBtn" onclick="loadFromSupabase()">
@@ -242,8 +242,9 @@
     <button class="filter-btn" onclick="setFilter('lblue',this)" style="border-color:var(--blue-border);color:var(--blue);">● L:Blue</button>
     <button class="filter-btn" id="tripleBtn" onclick="setFilter('triple',this)" style="border-color:var(--accent);color:var(--accent);font-weight:600;">&#9889; Triple Bull</button>
     <select class="sort-select" id="tfSelect" onchange="setTF(this.value)" style="margin-left:0; border-color:var(--accent); color:var(--accent);">
-      <option value="D">Timeframe: Daily</option>
+      <option value="2H">Timeframe: 2H</option>
       <option value="4H">Timeframe: 4H</option>
+      <option value="D" selected>Timeframe: Daily</option>
       <option value="W">Timeframe: Weekly</option>
       <option value="M">Timeframe: Monthly</option>
     </select>
@@ -290,12 +291,12 @@
 </div>
 
 <script>
-// ── CONFIG ────────────────────────────────────────────────────────────────────
+// -- CONFIG --------------------------------------------------------------------
 const SUPABASE_URL  = 'https://ixcwtfrelsyjjiribpeo.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4Y3d0ZnJlbHN5amppcmlicGVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0Mjk4MzMsImV4cCI6MjA5NTAwNTgzM30.KvvGWXbI91uH7PA-Nbj33BRqEUziXkt1el2a5ihf9Zg';
 const REFRESH_INTERVAL = 30; // seconds between Supabase reads
 
-// ── STATE ─────────────────────────────────────────────────────────────────────
+// -- STATE ---------------------------------------------------------------------
 let allData    = [];
 let curFilter  = 'all';
 let curSort    = '';
@@ -303,19 +304,19 @@ let curTF      = 'D';
 let countdownTimer = null;
 let secondsLeft    = 0;
 
-// ── TIMEFRAME HELPERS ─────────────────────────────────────────────────────────
+// -- TIMEFRAME HELPERS ---------------------------------------------------------
 // Defined as functions (not const) so they are hoisted and available everywhere
-function getBFlip(r)  { return curTF==='4H' ? (r.bFlipTime4h||r.bFlipTime) : curTF==='W' ? (r.bFlipTimeW||r.bFlipTime) : curTF==='M' ? (r.bFlipTimeM||r.bFlipTime) : r.bFlipTime; }
-function getLFlip(r)  { return curTF==='4H' ? (r.lFlipTime4h||r.lFlipTime) : curTF==='W' ? (r.lFlipTimeW||r.lFlipTime) : curTF==='M' ? (r.lFlipTimeM||r.lFlipTime) : r.lFlipTime; }
-function getChgPct(r) { return curTF==='4H' ? (r.chgPct4h||r.chgPct) : curTF==='W' ? (r.chgPctW||r.chgPct) : curTF==='M' ? (r.chgPctM||r.chgPct) : r.chgPct; }
-function getTfChg(r)  { return curTF==='4H' ? (r.chg4h||r.chg) : curTF==='W' ? (r.chgW||r.chg) : curTF==='M' ? (r.chgM||r.chg) : r.chg; }
+function getBFlip(r)  { return curTF==='2H'?(r.bFlipTime2h||r.bFlipTime4h||r.bFlipTime):curTF==='4H'?(r.bFlipTime4h||r.bFlipTime):curTF==='W'?(r.bFlipTimeW||r.bFlipTime):curTF==='M'?(r.bFlipTimeM||r.bFlipTime):r.bFlipTime; }
+function getLFlip(r)  { return curTF==='2H'?(r.lFlipTime2h||r.lFlipTime4h||r.lFlipTime):curTF==='4H'?(r.lFlipTime4h||r.lFlipTime):curTF==='W'?(r.lFlipTimeW||r.lFlipTime):curTF==='M'?(r.lFlipTimeM||r.lFlipTime):r.lFlipTime; }
+function getChgPct(r) { return curTF==='2H'?(r.chgPct2h||r.chgPct4h||r.chgPct):curTF==='4H'?(r.chgPct4h||r.chgPct):curTF==='W'?(r.chgPctW||r.chgPct):curTF==='M'?(r.chgPctM||r.chgPct):r.chgPct; }
+function getTfChg(r)  { return curTF==='2H'?(r.chg2h||r.chg4h||r.chg):curTF==='4H'?(r.chg4h||r.chg):curTF==='W'?(r.chgW||r.chg):curTF==='M'?(r.chgM||r.chg):r.chg; }
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
+// -- INIT ----------------------------------------------------------------------
 window.addEventListener('DOMContentLoaded', () => { loadFromSupabase(); });
 
-// ── SUPABASE READ ─────────────────────────────────────────────────────────────
+// -- SUPABASE READ -------------------------------------------------------------
 async function loadFromSupabase() {
-  setStatus('loading', 'Reading from database…');
+  setStatus('loading', 'Reading from database');
   const btn  = document.getElementById('refreshBtn');
   const icon = document.getElementById('refreshIcon');
   btn.disabled = true;
@@ -323,7 +324,7 @@ async function loadFromSupabase() {
   clearTimers();
 
   try {
-    // Two simple queries — no foreign key join needed
+    // Two simple queries -- no foreign key join needed
     const headers = {
       'apikey':        SUPABASE_ANON,
       'Authorization': `Bearer ${SUPABASE_ANON}`,
@@ -342,7 +343,7 @@ async function loadFromSupabase() {
     const flipRows = await flipRes.json();
 
     if (!rows.length) {
-      setStatus('error', 'No data yet — Edge Function may still be running. Try refreshing in a minute.');
+      setStatus('error', 'No data yet -- Edge Function may still be running. Try refreshing in a minute.');
       return;
     }
 
@@ -356,6 +357,8 @@ async function loadFromSupabase() {
       price:    r.price,
       chg:      r.chg,
       chgPct:   r.chg_pct,
+      chg2h:    r.chg_2h,
+      chgPct2h: r.chg_pct_2h,
       chg4h:    r.chg_4h,
       chgPct4h: r.chg_pct_4h,
       chgW:     r.chg_w,
@@ -368,6 +371,8 @@ async function loadFromSupabase() {
       mktCapB:  r.mkt_cap_b,
       bFlipTime:   flipMap[r.sym]?.b_flip_time    ?? null,
       lFlipTime:   flipMap[r.sym]?.l_flip_time    ?? null,
+      bFlipTime2h: flipMap[r.sym]?.b_flip_time_2h ?? null,
+      lFlipTime2h: flipMap[r.sym]?.l_flip_time_2h ?? null,
       bFlipTime4h: flipMap[r.sym]?.b_flip_time_4h ?? null,
       lFlipTime4h: flipMap[r.sym]?.l_flip_time_4h ?? null,
       bFlipTimeW:  flipMap[r.sym]?.b_flip_time_w  ?? null,
@@ -375,6 +380,7 @@ async function loadFromSupabase() {
       bFlipTimeM:  flipMap[r.sym]?.b_flip_time_m  ?? null,
       lFlipTimeM:  flipMap[r.sym]?.l_flip_time_m  ?? null,
       tf: {
+        '2H': { b: r.b_2h||r.b_4h, l: r.l_2h||r.l_4h },
         '4H': { b: r.b_4h, l: r.l_4h },
         'D':  { b: r.b_d,  l: r.l_d  },
         'W':  { b: r.b_w,  l: r.l_w  },
@@ -398,7 +404,7 @@ async function loadFromSupabase() {
         return 'neutral';
       })(),
       bSignal:   r.b_d,
-      lSignal:   r.l_d, // daily — used for flip detection baseline only
+      lSignal:   r.l_d, // daily -- used for flip detection baseline only
     }));
 
     render();
@@ -413,7 +419,7 @@ async function loadFromSupabase() {
     const fetchCET  = fetchTime.toLocaleString('en-GB', {
       timeZone:'Europe/Stockholm', hour:'2-digit', minute:'2-digit', second:'2-digit'
     });
-    setStatus('live', `Live · Fetched ${fetchCET} CET · Data updated ${dataCET} · ${allData.length}/30 loaded`);
+    setStatus('live', `Live . Fetched ${fetchCET} CET . Data updated ${dataCET} . ${allData.length} stocks loaded`);
     startCountdown();
 
   } catch(e) {
@@ -425,7 +431,7 @@ async function loadFromSupabase() {
   }
 }
 
-// ── RENDER TABLE ──────────────────────────────────────────────────────────────
+// -- RENDER TABLE --------------------------------------------------------------
 function render() {
   let rows = [...allData];
 
@@ -453,25 +459,29 @@ function render() {
     });
   }
 
-  // Sort (only if not triple — triple has its own sort)
-  if (curFilter !== 'triple') {
-    if (curSort === 'chg_d')          rows.sort((a,b) => getChgPct(b)-getChgPct(a));
-    else if (curSort === 'chg_a')     rows.sort((a,b) => getChgPct(a)-getChgPct(b));
-    else if (curSort === 'price_d')   rows.sort((a,b) => (b.price||0)-(a.price||0));
-    else if (curSort === 'price_a')   rows.sort((a,b) => (a.price||0)-(b.price||0));
-    else if (curSort === 'az')        rows.sort((a,b) => a.sym.localeCompare(b.sym));
-    else if (curSort === 'mktcap_d')  rows.sort((a,b) => (b.mktCapB||0)-(a.mktCapB||0));
-    else if (curSort === 'bflip_d')   rows.sort((a,b) => parseDateStr(getBFlip(b)) - parseDateStr(getBFlip(a)));
-    else if (curSort === 'bflip_a')   rows.sort((a,b) => parseDateStr(getBFlip(a)) - parseDateStr(getBFlip(b)));
-    else if (curSort === 'lflip_d')   rows.sort((a,b) => parseDateStr(getLFlip(b)) - parseDateStr(getLFlip(a)));
-    else if (curSort === 'lflip_a')   rows.sort((a,b) => parseDateStr(getLFlip(a)) - parseDateStr(getLFlip(b)));
-  }
+  // Sort always applies -- filter first, then sort within filtered results
+  // (like Excel: filter limits rows, sort orders them within that limit)
+  if (curSort === 'chg_d')         rows.sort((a,b) => getChgPct(b)-getChgPct(a));
+  else if (curSort === 'chg_a')    rows.sort((a,b) => getChgPct(a)-getChgPct(b));
+  else if (curSort === 'price_d')  rows.sort((a,b) => (b.price||0)-(a.price||0));
+  else if (curSort === 'price_a')  rows.sort((a,b) => (a.price||0)-(b.price||0));
+  else if (curSort === 'az')       rows.sort((a,b) => a.sym.localeCompare(b.sym));
+  else if (curSort === 'mktcap_d') rows.sort((a,b) => (b.mktCapB||0)-(a.mktCapB||0));
+  else if (curSort === 'bflip_d')  rows.sort((a,b) => parseDateStr(getBFlip(b)) - parseDateStr(getBFlip(a)));
+  else if (curSort === 'bflip_a')  rows.sort((a,b) => parseDateStr(getBFlip(a)) - parseDateStr(getBFlip(b)));
+  else if (curSort === 'lflip_d')  rows.sort((a,b) => parseDateStr(getLFlip(b)) - parseDateStr(getLFlip(a)));
+  else if (curSort === 'lflip_a')  rows.sort((a,b) => parseDateStr(getLFlip(a)) - parseDateStr(getLFlip(b)));
+  // Triple Bull default sort (newest B flip first) -- only when no other sort active
+  else if (curFilter === 'triple') rows.sort((a,b) => {
+    const bd = parseDateStr(getBFlip(b)) - parseDateStr(getBFlip(a));
+    return bd !== 0 ? bd : parseDateStr(getLFlip(b)) - parseDateStr(getLFlip(a));
+  });
 
   // Update sort arrow indicators
   document.getElementById('bflipArrow').textContent =
-    curSort==='bflip_d' ? '↓' : curSort==='bflip_a' ? '↑' : '';
+    curSort==='bflip_d' ? '' : curSort==='bflip_a' ? '' : '';
   document.getElementById('lflipArrow').textContent =
-    curSort==='lflip_d' ? '↓' : curSort==='lflip_a' ? '↑' : '';
+    curSort==='lflip_d' ? '' : curSort==='lflip_a' ? '' : '';
 
   const tbody = document.getElementById('tbody');
   if (!rows.length) {
@@ -504,17 +514,17 @@ function render() {
       ? Math.max(0,Math.min(1,(r.price-r.lo52)/(r.hi52-r.lo52))) : 0.5;
     const barColor = pos52>0.7?'var(--green)':pos52<0.3?'var(--red)':'var(--accent)';
     const mktFmt   = r.mktCapB>=1000?(r.mktCapB/1000).toFixed(1)+'T':r.mktCapB+'B';
-    const volFmt   = !r.vol?'—':r.vol>=1e9?(r.vol/1e9).toFixed(1)+'B'
+    const volFmt   = !r.vol?'--':r.vol>=1e9?(r.vol/1e9).toFixed(1)+'B'
       :r.vol>=1e6?(r.vol/1e6).toFixed(1)+'M':(r.vol/1e3).toFixed(0)+'K';
 
     const sent = r.sentiment;
     const badgeCls   = sent==='bull'?'badge-bull':sent==='bear'?'badge-bear':'badge-neut';
-    const badgeLabel  = sent==='bull'?'▲ BULL':sent==='bear'?'▼ BEAR':'◆ NEUT';
+    const badgeLabel  = sent==='bull'?' BULL':sent==='bear'?' BEAR':' NEUT';
 
     // Select flip date matching active timeframe (uses module-scope functions)
     const flipCell = (t) => t
       ? `<span class="flip-time" style="font-size:11px;">${t}</span>`
-      : `<span style="color:var(--dim);font-family:var(--mono);font-size:11px;">—</span>`;
+      : `<span style="color:var(--dim);font-family:var(--mono);font-size:11px;">--</span>`;
 
     return `<tr>
       <td><div class="ticker-sym">${r.sym}</div><div class="ticker-name">${r.name}</div></td>
@@ -538,7 +548,7 @@ function render() {
   }).join('');
 }
 
-// ── SUMMARY CARDS ─────────────────────────────────────────────────────────────
+// -- SUMMARY CARDS -------------------------------------------------------------
 function renderSummary() {
   const bull  = allData.filter(r=>r.sentiment==='bull').length;
   const bear  = allData.filter(r=>r.sentiment==='bear').length;
@@ -556,12 +566,12 @@ function renderSummary() {
   const avgEl = document.getElementById('sAvg');
   avgEl.textContent = (avg>=0?'+':'')+avg.toFixed(2)+'%';
   avgEl.className   = 'sum-val '+(avg>0?'green':avg<0?'red':'amber');
-  document.getElementById('sLeader').textContent  = leader  ?`${leader.sym} +${getChgPct(leader).toFixed(2)}%`:'—';
-  document.getElementById('sLaggard').textContent = laggard ?`${laggard.sym} ${getChgPct(laggard).toFixed(2)}%`:'—';
+  document.getElementById('sLeader').textContent  = leader  ?`${leader.sym} +${getChgPct(leader).toFixed(2)}%`:'--';
+  document.getElementById('sLaggard').textContent = laggard ?`${laggard.sym} ${getChgPct(laggard).toFixed(2)}%`:'--';
 }
 
-// ── CONTROLS ──────────────────────────────────────────────────────────────────
-// Parse DDMMYY → sortable integer YYYYMMDD (higher = more recent)
+// -- CONTROLS ------------------------------------------------------------------
+// Parse DDMMYY -> sortable integer YYYYMMDD (higher = more recent)
 function parseDateStr(s) {
   if (!s || s.length !== 6) return 0;
   return (parseInt(s.slice(4,6)) + 2000) * 10000
@@ -610,13 +620,13 @@ function setSort(s) {
 }
 function setTF(tf)   { curTF = tf; render(); }
 
-// ── STATUS ────────────────────────────────────────────────────────────────────
+// -- STATUS --------------------------------------------------------------------
 function setStatus(type, msg) {
   document.getElementById('statusDot').className = 'status-dot'+(type==='live'?' live':type==='error'?' error':'');
   document.getElementById('statusText').textContent = msg;
 }
 
-// ── COUNTDOWN ─────────────────────────────────────────────────────────────────
+// -- COUNTDOWN -----------------------------------------------------------------
 function startCountdown() {
   secondsLeft = REFRESH_INTERVAL;
   document.getElementById('refreshRing').style.display = 'block';
