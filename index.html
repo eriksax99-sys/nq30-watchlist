@@ -143,10 +143,6 @@
 
   footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:0.05em;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 
-  /* ── TABS ── */
-  .tab-nav{display:flex;gap:0;border-bottom:1px solid var(--border);margin:20px 0 0;}  .tab-btn{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:10px 20px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;}  .tab-btn:hover{color:var(--text);}  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}  .tab-pane{display:none;}  .tab-pane.active{display:block;}
-  /* ── ALERTS TAB ── */
-  .alert-controls{display:flex;align-items:center;gap:12px;padding:16px 0 12px;flex-wrap:wrap;}  .alert-label{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:0.05em;}  .alert-window-btn{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 14px;cursor:pointer;transition:all 0.15s;letter-spacing:0.05em;}  .alert-window-btn:hover{border-color:var(--border2);color:var(--text);}  .alert-window-btn.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600;}  .alert-count{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:auto;}  .alert-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:grid;grid-template-columns:1fr auto auto auto auto;align-items:center;gap:16px;transition:background 0.1s;margin-bottom:8px;}  .alert-card:hover{background:var(--bg3);border-color:var(--border2);}  .alert-card-ticker{font-family:var(--mono);font-weight:700;font-size:14px;}  .alert-card-name{font-size:11px;color:var(--muted);margin-top:2px;}  .alert-card-price{font-family:var(--mono);font-size:13px;font-weight:500;text-align:right;}  .alert-card-chg{font-family:var(--mono);font-size:12px;text-align:right;}  .alert-flip-info{text-align:right;}  .alert-flip-label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);}  .alert-flip-time{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600;}  .alert-badges{display:flex;gap:6px;justify-content:flex-end;}  .alert-empty{text-align:center;padding:60px;font-family:var(--mono);font-size:12px;color:var(--muted);}  .alert-empty-icon{font-size:32px;margin-bottom:12px;opacity:0.4;}  .alert-section-title{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--dim);margin:16px 0 8px;}
   @media(max-width:640px){h1{font-size:20px;}.api-setup{flex-wrap:wrap;}.api-setup input{width:100%;}header{flex-direction:column;align-items:flex-start;}}
 </style>
 </head>
@@ -179,15 +175,6 @@
       </div>
     </span>
   </div>
-
-  <!-- TAB NAVIGATION -->
-  <nav class="tab-nav">
-    <button class="tab-btn active" id="tabWatchlist" onclick="switchTab('watchlist')">Watchlist</button>
-    <button class="tab-btn" id="tabAlerts" onclick="switchTab('alerts')">&#9889; Alerts</button>
-  </nav>
-
-  <!-- WATCHLIST TAB -->
-  <div class="tab-pane active" id="paneWatchlist">
 
   <!-- LEGEND -->
   <div class="legend">
@@ -278,16 +265,16 @@
       <thead>
         <tr>
           <th onclick="setSort('az')">Ticker</th>
-          <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='price_d'?'price_a':'price_d')" title="Sort by Price">Price</th>
-          <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='chgabs_d'?'chgabs_a':'chgabs_d')" title="Sort by absolute change">Chg</th>
-          <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='chg_d'?'chg_a':'chg_d')" title="Sort by % change">% Chg</th>
+          <th class="r" onclick="setSort('price_d')">Price</th>
+          <th class="r" onclick="setSort('chg_d')">Chg</th>
+          <th class="r" onclick="setSort('chg_d')">% Chg</th>
           <th class="r">52W</th>
-          <th class="r" onclick="setSort(curSort==='mktcap_d'?'mktcap_a':'mktcap_d')" title="Sort by Market Cap">Mkt Cap</th>
+          <th class="r" onclick="setSort('mktcap_d')">Mkt Cap</th>
           <th class="c">Trend</th>
           <th class="c b-col has-tip" data-tip="B = Momentum signal. SMMA21 of close with ATR14×2.5 volatility band. State-based and sticky.">B</th>
-          <th class="c has-tip" style="font-size:10px;color:var(--green);border-bottom:2px solid var(--green-border);cursor:pointer;" data-tip="When the B signal last flipped (CET). Click to sort." onclick="setSort(curSort==='bflip_d'?'bflip_a':'bflip_d')" title="Sort by B Flip date">B Flip <span id="bflipArrow"></span></th>
+          <th class="c has-tip" style="font-size:10px;color:var(--green);border-bottom:2px solid var(--green-border);cursor:pointer;" data-tip="When the B signal last flipped (CET). Click to sort." onclick="setSort('bflip_d')">B Flip <span id="bflipArrow"></span></th>
           <th class="c l-col has-tip" data-tip="L = Ribbon signal. SMMA15 vs SMMA25 on (H+L)/2. Gold = uptrend, Blue = downtrend.">L</th>
-          <th class="c has-tip" style="font-size:10px;color:var(--amber);border-bottom:2px solid var(--amber-border);cursor:pointer;" data-tip="When the L signal last flipped (CET). Click to sort." onclick="setSort(curSort==='lflip_d'?'lflip_a':'lflip_d')" title="Sort by L Flip date">L Flip <span id="lflipArrow"></span></th>
+          <th class="c has-tip" style="font-size:10px;color:var(--amber);border-bottom:2px solid var(--amber-border);cursor:pointer;" data-tip="When the L signal last flipped (CET). Click to sort." onclick="setSort('lflip_d')">L Flip <span id="lflipArrow"></span></th>
           <th class="r">Volume</th>
         </tr>
       </thead>
@@ -297,24 +284,8 @@
     </table>
   </div>
 
-  </div><!-- /paneWatchlist -->
-
-  <!-- ALERTS TAB -->
-  <div class="tab-pane" id="paneAlerts">
-    <div class="alert-controls">
-      <span class="alert-label">Triple Bull flipped within:</span>
-      <button class="alert-window-btn active" data-hours="1"  onclick="setAlertWindow(1,this)">Last 1H</button>
-      <button class="alert-window-btn"         data-hours="2"  onclick="setAlertWindow(2,this)">Last 2H</button>
-      <button class="alert-window-btn"         data-hours="4"  onclick="setAlertWindow(4,this)">Last 4H</button>
-      <button class="alert-window-btn"         data-hours="8"  onclick="setAlertWindow(8,this)">Last 8H</button>
-      <button class="alert-window-btn"         data-hours="24" onclick="setAlertWindow(24,this)">Last 24H</button>
-      <span class="alert-count" id="alertCount"></span>
-    </div>
-    <div id="alertList"></div>
-  </div><!-- /paneAlerts -->
-
   <footer>
-    <span>NQ100 WATCHLIST · POWERED BY SUPABASE + YAHOO FINANCE</span>
+    <span>NQ30 WATCHLIST · POWERED BY SUPABASE + YAHOO FINANCE</span>
     <span>DATA UPDATES EVERY 30 MIN · NOT FINANCIAL ADVICE</span>
   </footer>
 </div>
@@ -438,7 +409,6 @@ async function loadFromSupabase() {
 
     render();
     renderSummary();
-    if (curTab === 'alerts') renderAlerts();
     // Show when data was last updated by Edge Function
     const dataTime = new Date(rows[0]?.updated_at);
     const dataCET  = dataTime.toLocaleString('en-GB', {
@@ -493,13 +463,10 @@ function render() {
   // (like Excel: filter limits rows, sort orders them within that limit)
   if (curSort === 'chg_d')         rows.sort((a,b) => getChgPct(b)-getChgPct(a));
   else if (curSort === 'chg_a')    rows.sort((a,b) => getChgPct(a)-getChgPct(b));
-  else if (curSort === 'chgabs_d') rows.sort((a,b) => getTfChg(b)-getTfChg(a));
-  else if (curSort === 'chgabs_a') rows.sort((a,b) => getTfChg(a)-getTfChg(b));
   else if (curSort === 'price_d')  rows.sort((a,b) => (b.price||0)-(a.price||0));
   else if (curSort === 'price_a')  rows.sort((a,b) => (a.price||0)-(b.price||0));
   else if (curSort === 'az')       rows.sort((a,b) => a.sym.localeCompare(b.sym));
   else if (curSort === 'mktcap_d') rows.sort((a,b) => (b.mktCapB||0)-(a.mktCapB||0));
-  else if (curSort === 'mktcap_a') rows.sort((a,b) => (a.mktCapB||0)-(b.mktCapB||0));
   else if (curSort === 'bflip_d')  rows.sort((a,b) => parseDateStr(getBFlip(b)) - parseDateStr(getBFlip(a)));
   else if (curSort === 'bflip_a')  rows.sort((a,b) => parseDateStr(getBFlip(a)) - parseDateStr(getBFlip(b)));
   else if (curSort === 'lflip_d')  rows.sort((a,b) => parseDateStr(getLFlip(b)) - parseDateStr(getLFlip(a)));
@@ -682,165 +649,6 @@ function clearTimers() {
   document.getElementById('refreshRing').style.display = 'none';
   document.getElementById('countdown').textContent = '';
 }
-// -- TABS ----------------------------------------------------------------------
-let curTab         = 'watchlist';
-let alertWindowHrs = 1;
-
-function switchTab(tab) {
-  curTab = tab;
-  document.getElementById('paneWatchlist').classList.toggle('active', tab === 'watchlist');
-  document.getElementById('paneAlerts').classList.toggle('active',    tab === 'alerts');
-  document.getElementById('tabWatchlist').classList.toggle('active',  tab === 'watchlist');
-  document.getElementById('tabAlerts').classList.toggle('active',     tab === 'alerts');
-  if (tab === 'alerts') renderAlerts();
-}
-
-function setAlertWindow(hrs, btn) {
-  alertWindowHrs = hrs;
-  document.querySelectorAll('.alert-window-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderAlerts();
-}
-
-// Parse DDMMYY or DDMMYY HHMM into a Date object (CET timezone)
-// Returns null if unparseable
-function parseFlipDate(s) {
-  if (!s || s.length < 6) return null;
-  const day = parseInt(s.slice(0,2));
-  const mon = parseInt(s.slice(2,4)) - 1; // 0-based month
-  const yr  = parseInt(s.slice(4,6)) + 2000;
-  let hr = 0, mi = 0;
-  if (s.length >= 11 && s[6] === ' ') {
-    hr = parseInt(s.slice(7,9));
-    mi = parseInt(s.slice(9,11));
-  }
-  // Construct date in CET (Europe/Stockholm) - approximate using UTC offset
-  // CET = UTC+1 (winter), CEST = UTC+2 (summer)
-  // We use a locale string to get the right UTC epoch
-  const cetStr = `${yr}-${String(mon+1).padStart(2,'0')}-${String(day).padStart(2,'0')}T${String(hr).padStart(2,'0')}:${String(mi).padStart(2,'0')}:00`;
-  // Parse as if it's in Stockholm time
-  const d = new Date(new Date(cetStr).toLocaleString('en-US', {timeZone: 'UTC'}));
-  // Get the offset between Stockholm and UTC at this moment
-  const utcDate = new Date(cetStr + 'Z'); // treat as UTC first
-  const cetDate = new Date(utcDate.toLocaleString('en-US', {timeZone: 'Europe/Stockholm'}));
-  const offsetMs = utcDate - cetDate + utcDate; // won't work cleanly, use simpler approach
-  // Simpler: just treat the stored date as approximate and use UTC equivalents
-  // CET winter = UTC+1, summer = UTC+2. We'll assume UTC+1 as conservative.
-  return new Date(Date.UTC(yr, mon, day, hr === 0 ? 12 : hr - 1, mi)); // -1h for CET->UTC approx
-}
-
-// Better approach: parse the stored date string and compare using hours-ago calculation
-function flipAgoHours(s) {
-  if (!s || s.length < 6) return Infinity;
-  const day = parseInt(s.slice(0,2));
-  const mon = parseInt(s.slice(2,4)) - 1;
-  const yr  = parseInt(s.slice(4,6)) + 2000;
-  let hr = 12, mi = 0; // default to noon for date-only strings (daily/weekly/monthly)
-  if (s.length >= 11 && s[6] === ' ') {
-    hr = parseInt(s.slice(7,9));
-    mi = parseInt(s.slice(9,11));
-  }
-  // Determine actual Stockholm UTC offset dynamically (handles CET=+1 and CEST=+2)
-  const probe = new Date();
-  const cetH  = parseInt(probe.toLocaleString('en-US',{timeZone:'Europe/Stockholm',hour:'numeric',hour12:false}).replace('24','0'));
-  const cetOffset = (cetH - probe.getUTCHours() + 24) % 24;
-  const utcEpoch = Date.UTC(yr, mon, day, hr - cetOffset, mi);
-  return (Date.now() - utcEpoch) / 3600000;
-}
-
-// A stock is "Triple Bull" if Trend=bull AND B=bull AND L=gold on Daily timeframe
-// "Recently flipped" = the most recent of bFlipTime or lFlipTime is within the window
-// We check the DAILY timeframe for Triple Bull status (canonical)
-function renderAlerts() {
-  const nowHrs   = alertWindowHrs;
-  const alertDiv = document.getElementById('alertList');
-  const countEl  = document.getElementById('alertCount');
-
-  if (!allData.length) {
-    alertDiv.innerHTML = '<div class="alert-empty"><div class="alert-empty-icon">&#9889;</div>No data loaded yet.</div>';
-    return;
-  }
-
-  // Find all stocks that are CURRENTLY Triple Bull on Daily
-  const tripleBull = allData.filter(r => {
-    const d = (r.tf || {})['D'] || {};
-    return r.sentiment === 'bull' && d.b === 'bull' && d.l === 'gold';
-  });
-
-  // For each, find when the LAST of the three conditions was met
-  // i.e., the most recent flip that completed the triple
-  // We use the Daily B flip time as the primary signal
-  // (the one most likely to be the final trigger)
-  const recent = tripleBull.filter(r => {
-    const bAgo = flipAgoHours(r.bFlipTime);
-    const lAgo = flipAgoHours(r.lFlipTime);
-    // Triple completed when the LATER of B or L flip happened
-    // If either flip is within the window, it may have just completed the triple
-    const latestFlipAgo = Math.min(bAgo, lAgo); // min = most recent
-    return latestFlipAgo <= nowHrs;
-  });
-
-  // Sort by most recent flip first
-  recent.sort((a, b) => {
-    const aAgo = Math.min(flipAgoHours(a.bFlipTime), flipAgoHours(a.lFlipTime));
-    const bAgo = Math.min(flipAgoHours(b.bFlipTime), flipAgoHours(b.lFlipTime));
-    return aAgo - bAgo; // ascending = most recent first
-  });
-
-  countEl.textContent = recent.length ? `${recent.length} alert${recent.length!==1?'s':''}` : '';
-
-  if (!recent.length) {
-    const label = nowHrs === 1 ? 'last hour' : `last ${nowHrs} hours`;
-    alertDiv.innerHTML = `
-      <div class="alert-empty">
-        <div class="alert-empty-icon">&#9889;</div>
-        No stocks flipped Triple Bullish in the ${label}.<br>
-        <span style="font-size:11px;margin-top:8px;display:block;">
-          Try a wider time window, or check back after the next data refresh.
-        </span>
-      </div>`;
-    return;
-  }
-
-  alertDiv.innerHTML = recent.map(r => {
-    const bAgo  = flipAgoHours(r.bFlipTime);
-    const lAgo  = flipAgoHours(r.lFlipTime);
-    const latestAgo = Math.min(bAgo, lAgo);
-    const latestFlip = bAgo < lAgo ? r.bFlipTime : r.lFlipTime;
-    const latestLabel = bAgo < lAgo ? 'B Flip' : 'L Flip';
-
-    // Format "X hours ago"
-    const agoText = latestAgo < 1
-      ? `${Math.round(latestAgo*60)}m ago`
-      : `${latestAgo.toFixed(1)}h ago`;
-
-    const pc = r.chgPct > 0.05 ? 'chg-pos' : r.chgPct < -0.05 ? 'chg-neg' : 'chg-neu';
-    const sign = r.chgPct >= 0 ? '+' : '';
-    const priceFmt = r.price >= 1000
-      ? '$'+r.price.toLocaleString('en-US',{maximumFractionDigits:0})
-      : '$'+Number(r.price).toFixed(2);
-
-    return `
-      <div class="alert-card">
-        <div>
-          <div class="alert-card-ticker">${r.sym}</div>
-          <div class="alert-card-name">${r.name}</div>
-        </div>
-        <div class="alert-card-price">${priceFmt}</div>
-        <div class="alert-card-chg ${pc}">${sign}${Number(r.chgPct).toFixed(2)}%</div>
-        <div class="alert-badges">
-          <span class="b-bull">Bullish</span>
-          <span class="l-gold">Gold</span>
-        </div>
-        <div class="alert-flip-info">
-          <div class="alert-flip-label">${latestLabel}</div>
-          <div class="alert-flip-time">${agoText}</div>
-          <div style="font-family:var(--mono);font-size:10px;color:var(--dim);">${latestFlip || '--'}</div>
-        </div>
-      </div>`;
-  }).join('');
-}
-
 </script>
 </body>
 </html>
