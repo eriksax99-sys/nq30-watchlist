@@ -23,9 +23,9 @@
   body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,170,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,170,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
   .container{max-width:1340px;margin:0 auto;padding:0 24px 60px;position:relative;z-index:1;}
 
-  header{display:flex;align-items:flex-end;justify-content:space-between;padding:16px 0 14px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap;}
+  header{display:flex;align-items:flex-end;justify-content:space-between;padding:36px 0 28px;border-bottom:1px solid var(--border);gap:20px;flex-wrap:wrap;}
   .logo{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:0.15em;color:var(--accent);text-transform:uppercase;margin-bottom:6px;}
-  h1{font-family:var(--mono);font-size:22px;font-weight:600;letter-spacing:-0.02em;}
+  h1{font-family:var(--mono);font-size:28px;font-weight:600;letter-spacing:-0.02em;}
   h1 span{color:var(--accent);}
   .header-meta{font-size:12px;color:var(--muted);margin-top:6px;font-family:var(--mono);}
   .header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
@@ -47,18 +47,18 @@
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
 
   /* LEGEND */
-  .legend{display:flex;gap:8px;padding:8px 0 6px;flex-wrap:wrap;border-bottom:1px solid var(--border);}
+  .legend{display:flex;gap:24px;padding:14px 0 6px;flex-wrap:wrap;border-bottom:1px solid var(--border);}
   .legend-group{display:flex;align-items:center;gap:10px;}
   .legend-title{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--dim);margin-right:2px;}
   .legend-item{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--muted);}
   .legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
 
-  .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;padding:8px 0;}
-  .sum-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;}
+  .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;padding:16px 0;}
+  .sum-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
   .sum-card.green{border-color:var(--green-border);background:var(--green-bg);}
   .sum-card.red{border-color:var(--red-border);background:var(--red-bg);}
-  .sum-label{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
-  .sum-val{font-family:var(--mono);font-size:18px;font-weight:600;}
+  .sum-label{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+  .sum-val{font-family:var(--mono);font-size:22px;font-weight:600;}
   .sum-val.green{color:var(--green);}
   .sum-val.red{color:var(--red);}
   .sum-val.amber{color:var(--amber);}
@@ -144,7 +144,7 @@
   footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:0.05em;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 
   /* ── TABS ── */
-  .tab-nav{display:flex;gap:0;border-bottom:1px solid var(--border);margin:20px 0 0;}  .tab-btn{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:10px 20px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;}  .tab-btn:hover{color:var(--text);}  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}  .alert-star{margin-left:4px;font-size:12px;transition:color 0.3s;}  .tab-pane{display:none;}  .tab-pane.active{display:block;}
+  .tab-nav{display:flex;gap:0;border-bottom:1px solid var(--border);margin:20px 0 0;}  .tab-btn{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:10px 20px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;}  .tab-btn:hover{color:var(--text);}  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}  .tab-pane{display:none;}  .tab-pane.active{display:block;}
   /* ── ALERTS TAB ── */
   .alert-controls{display:flex;align-items:center;gap:12px;padding:16px 0 12px;flex-wrap:wrap;}  .alert-label{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:0.05em;}  .alert-window-btn{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 14px;cursor:pointer;transition:all 0.15s;letter-spacing:0.05em;}  .alert-window-btn:hover{border-color:var(--border2);color:var(--text);}  .alert-window-btn.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600;}  .alert-count{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:auto;}  .alert-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:grid;grid-template-columns:1fr auto auto auto auto;align-items:center;gap:16px;transition:background 0.1s;margin-bottom:8px;}  .alert-card:hover{background:var(--bg3);border-color:var(--border2);}  .alert-card-ticker{font-family:var(--mono);font-weight:700;font-size:14px;}  .alert-card-name{font-size:11px;color:var(--muted);margin-top:2px;}  .alert-card-price{font-family:var(--mono);font-size:13px;font-weight:500;text-align:right;}  .alert-card-chg{font-family:var(--mono);font-size:12px;text-align:right;}  .alert-flip-info{text-align:right;}  .alert-flip-label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);}  .alert-flip-time{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600;}  .alert-badges{display:flex;gap:6px;justify-content:flex-end;}  .alert-empty{text-align:center;padding:60px;font-family:var(--mono);font-size:12px;color:var(--muted);}  .alert-empty-icon{font-size:32px;margin-bottom:12px;opacity:0.4;}  .alert-section-title{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--dim);margin:16px 0 8px;}
   @media(max-width:640px){h1{font-size:20px;}.api-setup{flex-wrap:wrap;}.api-setup input{width:100%;}header{flex-direction:column;align-items:flex-start;}}
@@ -183,7 +183,7 @@
   <!-- TAB NAVIGATION -->
   <nav class="tab-nav">
     <button class="tab-btn active" id="tabWatchlist" onclick="switchTab('watchlist')">Watchlist</button>
-    <button class="tab-btn" id="tabAlerts" onclick="switchTab('alerts')">&#9889; Alerts<span id="alertStar" class="alert-star" style="color:var(--green)">&#9733;</span></button>
+    <button class="tab-btn" id="tabAlerts" onclick="switchTab('alerts')">&#9889; Alerts</button>
     <button class="tab-btn" id="tabCrypto" onclick="switchTab('crypto')">&#9679; Crypto</button>
   </nav>
 
@@ -264,7 +264,7 @@
       <option value="price_d">Price ↓</option>
       <option value="price_a">Price ↑</option>
       <option value="az">Ticker A–Z</option>
-      
+      <option value="mktcap_d">Mkt Cap ↓</option>
     </select>
   </div>
 
@@ -277,7 +277,8 @@
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='price_d'?'price_a':'price_d')" title="Sort by Price">Price</th>
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='chgabs_d'?'chgabs_a':'chgabs_d')" title="Sort by absolute change">Chg</th>
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='chg_d'?'chg_a':'chg_d')" title="Sort by % change">% Chg</th>
-          <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='w52_d'?'w52_a':'w52_d')" title="Sort by 52-week range position">52W</th>
+          <th class="r">52W</th>
+          <th class="r" onclick="setSort(curSort==='mktcap_d'?'mktcap_a':'mktcap_d')" title="Sort by Market Cap">Mkt Cap</th>
           <th class="c">Trend</th>
           <th class="c b-col has-tip" data-tip="B = Momentum signal. SMMA21 of close with ATR14×2.5 volatility band. State-based and sticky.">B</th>
           <th class="c has-tip" style="font-size:10px;color:var(--green);border-bottom:2px solid var(--green-border);cursor:pointer;" data-tip="When the B signal last flipped (CET). Click to sort." onclick="setSort(curSort==='bflip_d'?'bflip_a':'bflip_d')" title="Sort by B Flip date">B Flip <span id="bflipArrow"></span></th>
@@ -343,7 +344,7 @@
         <option value="price_d">Price &#8595;</option>
         <option value="price_a">Price &#8593;</option>
         <option value="az">Ticker A-Z</option>
-        
+        <option value="mktcap_d">Mkt Cap &#8595;</option>
         <option value="bflip_d">B Flip &#8595;</option>
         <option value="lflip_d">L Flip &#8595;</option>
       </select>
@@ -582,8 +583,6 @@ function render() {
     if (!a.mktCapB) return 1; if (!b.mktCapB) return -1;
     return a.mktCapB - b.mktCapB;
   });
-  else if (curSort === 'w52_d')    rows.sort((a,b)=>{const pa=(a.hi52&&a.lo52&&a.hi52>a.lo52)?Math.max(0,Math.min(1,(a.price-a.lo52)/(a.hi52-a.lo52))):0.5;const pb=(b.hi52&&b.lo52&&b.hi52>b.lo52)?Math.max(0,Math.min(1,(b.price-b.lo52)/(b.hi52-b.lo52))):0.5;return pb-pa;});
-  else if (curSort === 'w52_a')    rows.sort((a,b)=>{const pa=(a.hi52&&a.lo52&&a.hi52>a.lo52)?Math.max(0,Math.min(1,(a.price-a.lo52)/(a.hi52-a.lo52))):0.5;const pb=(b.hi52&&b.lo52&&b.hi52>b.lo52)?Math.max(0,Math.min(1,(b.price-b.lo52)/(b.hi52-b.lo52))):0.5;return pa-pb;});
   else if (curSort === 'bflip_d')  rows.sort((a,b) => parseDateStr(getBFlip(b)) - parseDateStr(getBFlip(a)));
   else if (curSort === 'bflip_a')  rows.sort((a,b) => parseDateStr(getBFlip(a)) - parseDateStr(getBFlip(b)));
   else if (curSort === 'lflip_d')  rows.sort((a,b) => parseDateStr(getLFlip(b)) - parseDateStr(getLFlip(a)));
@@ -872,8 +871,6 @@ function renderAlerts() {
   });
 
   countEl.textContent = recent.length ? `${recent.length} alert${recent.length!==1?'s':''}` : '';
-  const starEl = document.getElementById('alertStar');
-  if (starEl) starEl.style.color = recent.length > 0 ? 'var(--amber)' : 'var(--green)';
 
   if (!recent.length) {
     const label = nowHrs === 1 ? 'last hour' : `last ${nowHrs} hours`;
