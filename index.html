@@ -264,8 +264,7 @@
       <option value="price_d">Price ↓</option>
       <option value="price_a">Price ↑</option>
       <option value="az">Ticker A–Z</option>
-      
-    </select>
+          </select>
   </div>
 
   <!-- TABLE -->
@@ -343,7 +342,7 @@
         <option value="price_d">Price &#8595;</option>
         <option value="price_a">Price &#8593;</option>
         <option value="az">Ticker A-Z</option>
-        
+        <option value="mktcap_d">Mkt Cap &#8595;</option>
         <option value="bflip_d">B Flip &#8595;</option>
         <option value="lflip_d">L Flip &#8595;</option>
       </select>
@@ -626,7 +625,6 @@ function render() {
     const pos52 = (r.hi52 && r.lo52 && r.hi52>r.lo52)
       ? Math.max(0,Math.min(1,(r.price-r.lo52)/(r.hi52-r.lo52))) : 0.5;
     const barColor = pos52>0.7?'var(--green)':pos52<0.3?'var(--red)':'var(--accent)';
-    const mktFmt   = !r.mktCapB ? '--' : r.mktCapB>=1000?(r.mktCapB/1000).toFixed(1)+'T':r.mktCapB+'B';
     const volFmt   = !r.vol?'--':r.vol>=1e9?(r.vol/1e9).toFixed(1)+'B'
       :r.vol>=1e6?(r.vol/1e6).toFixed(1)+'M':(r.vol/1e3).toFixed(0)+'K';
 
@@ -650,7 +648,6 @@ function render() {
           <div class="w52-track"><div class="w52-fill" style="width:${Math.round(pos52*100)}%;background:${barColor}"></div></div>
         </div>
       </td>
-      <td class="r" style="color:var(--muted);font-family:var(--mono);font-size:12px;">${mktFmt}</td>
       <td class="c"><span class="badge ${badgeCls}">${badgeLabel}</span></td>
       <td class="c"><span class="${bCls}">${bLabel}</span></td>
       <td class="c">${flipCell(getBFlip(r))}</td>
