@@ -273,7 +273,7 @@
     <table>
       <thead>
         <tr>
-          <th onclick="setSort('az')">Ticker</th>
+          <th style="cursor:pointer;" onclick="setSort(curSort==='az'?'az_r':'az')">Ticker</th>
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='price_d'?'price_a':'price_d')" title="Sort by Price">Price</th>
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='chgabs_d'?'chgabs_a':'chgabs_d')" title="Sort by absolute change">Chg</th>
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='chg_d'?'chg_a':'chg_d')" title="Sort by % change">% Chg</th>
@@ -663,6 +663,7 @@ function render() {
   else if (curSort === 'price_d')  rows.sort((a,b) => (b.price||0)-(a.price||0));
   else if (curSort === 'price_a')  rows.sort((a,b) => (a.price||0)-(b.price||0));
   else if (curSort === 'az')       rows.sort((a,b) => a.sym.localeCompare(b.sym));
+  else if (curSort === 'az_r')     rows.sort((a,b) => b.sym.localeCompare(a.sym));
   else if (curSort === 'mktcap_d') rows.sort((a,b) => {
     if (!a.mktCapB && !b.mktCapB) return 0;
     if (!a.mktCapB) return 1; if (!b.mktCapB) return -1;
