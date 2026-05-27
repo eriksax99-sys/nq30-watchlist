@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Geestman's NQ60 Watchlist</title>
+<title>Geestman's Trading Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -156,8 +156,8 @@
   <header>
     <div class="header-left">
       <div class="logo">▸ Market Terminal</div>
-      <h1>Geestman's NQ<span style="color:var(--accent)">60</span> Watchlist</h1>
-      <div class="header-meta">Nasdaq Top 60 · Powered by Supabase</div>
+      <h1>Geestman's Trading Dashboard</h1>
+      <div class="header-meta">Powered by Supabase</div>
     </div>
     <div class="header-right">
       <button class="btn-refresh" id="refreshBtn" onclick="loadFromSupabase()">
@@ -182,10 +182,10 @@
 
   <!-- TAB NAVIGATION -->
   <nav class="tab-nav">
-    <button class="tab-btn active" id="tabWatchlist" onclick="switchTab('watchlist')">Watchlist</button>
-    <button class="tab-btn" id="tabAlerts" onclick="switchTab('alerts')">&#9889; Alerts<span id="alertStar" class="alert-star" style="color:var(--green)">&#9733;</span></button>
-    <button class="tab-btn" id="tabCrypto" onclick="switchTab('crypto')">&#9679; Crypto</button>
-    <button class="tab-btn" id="tabOMX" onclick="switchTab('omx')">&#11088; OMX 10</button>
+    <button class="tab-btn active" id="tabWatchlist" onclick="switchTab('watchlist')">Nasdaq60</button>
+    <button class="tab-btn" id="tabOMX" onclick="switchTab('omx')">OMX50</button>
+    <button class="tab-btn" id="tabCrypto" onclick="switchTab('crypto')">Crypto50</button>
+    <button class="tab-btn" id="tabAlerts" onclick="switchTab('alerts')" style="margin-left:auto;">&#9889; Alerts<span id="alertStar" class="alert-star" style="color:var(--green)">&#9733;</span></button>
   </nav>
 
   <!-- WATCHLIST TAB -->
