@@ -360,11 +360,11 @@
             <th class="c">Chg%</th>
             <th class="c has-tip" data-tip="52-week range position">Range</th>
             <th class="c has-tip" data-tip="Mkt Cap (billions USD)">Cap $B</th>
-            <th class="c">Trend</th>
+            <th class="c" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='trend_d'?'trend_a':'trend_d')">Trend</th>
             <th class="c b-col has-tip" data-tip="B signal: bull/bear based on highest-high / lowest-low + ATR14x2.5 bands">B</th>
-            <th class="c has-tip" data-tip="Date of last B signal flip (DDMMYY HHMM)">B Flip</th>
+            <th class="c has-tip" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='bflip_d'?'bflip_a':'bflip_d')" data-tip="Date of last B signal flip (DDMMYY HHMM)">B Flip</th>
             <th class="c l-col has-tip" data-tip="L signal: SMMA15 vs SMMA25 on HL2. Gold = uptrend, Blue = downtrend.">L</th>
-            <th class="c has-tip" data-tip="Date of last L signal flip (DDMMYY HHMM)">L Flip</th>
+            <th class="c has-tip" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='lflip_d'?'lflip_a':'lflip_d')" data-tip="Date of last L signal flip (DDMMYY HHMM)">L Flip</th>
             <th class="c">Vol</th>
           </tr>
         </thead>
@@ -437,6 +437,8 @@
         <option value="az">Ticker A-Z</option>
         <option value="w52_d">52W &#8595;</option>
         <option value="w52_a">52W &#8593;</option>
+        <option value="trend_d">Trend Bull</option>
+        <option value="trend_a">Trend Bear</option>
         <option value="bflip_d">B Flip &#8595;</option>
         <option value="lflip_d">L Flip &#8595;</option>
       </select>
@@ -452,11 +454,11 @@
             <th class="r" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='price_d'?'price_a':'price_d')" title="Sort by Price">Price</th>
             <th class="r" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='chg_d'?'chg_a':'chg_d')" title="Sort by % change">Chg %</th>
             <th class="r" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='w52_d'?'w52_a':'w52_d')" title="Sort by 52-week position">52W</th>
-            <th class="c">Trend</th>
+            <th class="c" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='trend_d'?'trend_a':'trend_d')">Trend</th>
             <th class="c b-col has-tip" data-tip="B signal: bull/bear based on highest-high / lowest-low + ATR14x2.5 bands">B</th>
-            <th class="c has-tip" data-tip="Date of last B signal flip (DDMMYY HHMM)">B Flip</th>
+            <th class="c has-tip" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='bflip_d'?'bflip_a':'bflip_d')" data-tip="Date of last B signal flip (DDMMYY HHMM)">B Flip</th>
             <th class="c l-col has-tip" data-tip="L signal: SMMA15 vs SMMA25 on HL2. Gold = uptrend, Blue = downtrend.">L</th>
-            <th class="c has-tip" data-tip="Date of last L signal flip (DDMMYY HHMM)">L Flip</th>
+            <th class="c has-tip" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='lflip_d'?'lflip_a':'lflip_d')" data-tip="Date of last L signal flip (DDMMYY HHMM)">L Flip</th>
             <th class="r">Volume</th>
           </tr>
         </thead>
@@ -1350,8 +1352,12 @@ function omxRender() {
     const pb=(b.hi52&&b.lo52&&b.hi52>b.lo52)?Math.max(0,Math.min(1,(b.price-b.lo52)/(b.hi52-b.lo52))):0.5;
     return pa-pb;
   });
+  else if (omxCurSort === 'trend_d') rows.sort((a,b) => {const o={'bull':2,'neutral':1,'bear':0};return (o[b.sentiment]||0)-(o[a.sentiment]||0);});
+  else if (omxCurSort === 'trend_a') rows.sort((a,b) => {const o={'bull':2,'neutral':1,'bear':0};return (o[a.sentiment]||0)-(o[b.sentiment]||0);});
   else if (omxCurSort === 'bflip_d') rows.sort((a,b) => omxParseDateStr(omxGetBFlip(b))-omxParseDateStr(omxGetBFlip(a)));
+  else if (omxCurSort === 'bflip_a') rows.sort((a,b) => omxParseDateStr(omxGetBFlip(a))-omxParseDateStr(omxGetBFlip(b)));
   else if (omxCurSort === 'lflip_d') rows.sort((a,b) => omxParseDateStr(omxGetLFlip(b))-omxParseDateStr(omxGetLFlip(a)));
+  else if (omxCurSort === 'lflip_a') rows.sort((a,b) => omxParseDateStr(omxGetLFlip(a))-omxParseDateStr(omxGetLFlip(b)));
 
   const flipCell = t => t
     ? `<span class="flip-time">${t}</span>`
