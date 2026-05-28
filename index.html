@@ -185,6 +185,7 @@
     <button class="tab-btn active" id="tabWatchlist" onclick="switchTab('watchlist')">Nasdaq60</button>
     <button class="tab-btn" id="tabOMX" onclick="switchTab('omx')">OMX50</button>
     <button class="tab-btn" id="tabCrypto" onclick="switchTab('crypto')">Crypto50</button>
+    <button class="tab-btn" id="tabWatchlist2" onclick="switchTab('watchlist2')">Watchlist</button>
     <button class="tab-btn" id="tabPortfolio" onclick="switchTab('portfolio')">Portfolio</button>
     <button class="tab-btn" id="tabAlerts" onclick="switchTab('alerts')" style="margin-left:auto;">&#9889; Alerts<span id="alertStar" class="alert-star" style="color:var(--green)">&#9733;</span></button>
   </nav>
@@ -238,8 +239,10 @@
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='price_d'?'price_a':'price_d')" title="Sort by Price">Price</th>
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='chgabs_d'?'chgabs_a':'chgabs_d')" title="Sort by absolute change">Chg</th>
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='chg_d'?'chg_a':'chg_d')" title="Sort by % change">% Chg</th>
-          <th class="c" style="width:28px;" title="Add to portfolio">+</th>
-          <th class="c" style="width:70px;font-size:10px;cursor:pointer;" onclick="setSort(curSort==='in_d'?'in_a':'in_d')">In</th>
+          <th class="c" style="width:28px;" title="Add to watchlist">W+</th>
+          <th class="c" style="width:70px;font-size:10px;cursor:pointer;" onclick="setSort(curSort==='wl_d'?'wl_a':'wl_d')">In Watch</th>
+          <th class="c" style="width:28px;" title="Add to portfolio">P+</th>
+          <th class="c" style="width:70px;font-size:10px;cursor:pointer;" onclick="setSort(curSort==='in_d'?'in_a':'in_d')">In Port</th>
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='w52_d'?'w52_a':'w52_d')" title="Sort by 52-week range position">52W</th>
           <th class="c">Trend</th>
           <th class="c b-col has-tip" data-tip="B = Momentum signal. SMMA21 of close with ATR14×2.5 volatility band. State-based and sticky.">B</th>
@@ -250,7 +253,7 @@
         </tr>
       </thead>
       <tbody id="tbody">
-        <tr class="state-row"><td colspan="14">Loading data from database…</td></tr>
+        <tr class="state-row"><td colspan="16">Loading data from database…</td></tr>
       </tbody>
     </table>
   </div>
@@ -394,8 +397,10 @@
             <th style="text-align:left;" onclick="setOMXSort(omxCurSort==='az'?'':'az')" title="Sort by Ticker">Ticker</th>
             <th class="r" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='price_d'?'price_a':'price_d')" title="Sort by Price">Price</th>
             <th class="r" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='chg_d'?'chg_a':'chg_d')" title="Sort by % change">Chg %</th>
-            <th class="c" style="width:28px;" title="Add to portfolio">+</th>
-            <th class="c" style="width:70px;font-size:10px;cursor:pointer;" onclick="setSort(curSort==='in_d'?'in_a':'in_d')">In</th>
+            <th class="c" style="width:28px;" title="Add to watchlist">W+</th>
+            <th class="c" style="width:70px;font-size:10px;">In Watch</th>
+            <th class="c" style="width:28px;" title="Add to portfolio">P+</th>
+            <th class="c" style="width:70px;font-size:10px;">In Port</th>
             <th class="r" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='w52_d'?'w52_a':'w52_d')" title="Sort by 52-week position">52W</th>
             <th class="c" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='trend_d'?'trend_a':'trend_d')">Trend</th>
             <th class="c b-col has-tip" data-tip="B signal: bull/bear based on highest-high / lowest-low + ATR14x2.5 bands">B</th>
@@ -406,7 +411,7 @@
           </tr>
         </thead>
         <tbody id="omxTbody">
-          <tr class="state-row"><td colspan="12">Loading OMX data...</td></tr>
+          <tr class="state-row"><td colspan="14">Loading OMX data...</td></tr>
         </tbody>
       </table>
     </div>
@@ -420,6 +425,68 @@
     </div>
 
   </div><!-- /paneOMX -->
+
+  <!-- WATCHLIST PANE -->
+  <div class="tab-pane" id="paneWatchlist2">
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0 8px;flex-wrap:wrap;">
+      <button onclick="createWatchlist()" style="background:var(--accent);color:#000;border:none;border-radius:4px;padding:6px 14px;cursor:pointer;font-size:12px;font-weight:600;">+ New Watchlist</button>
+      <select id="watchlistSelect" onchange="selectWatchlist(this.value)" style="background:var(--bg2);color:var(--fg);border:1px solid var(--border);border-radius:4px;padding:5px 10px;font-size:12px;">
+        <option value="">Select watchlist...</option>
+      </select>
+      <button id="renameWatchlistBtn" onclick="renameWatchlist()" style="display:none;background:none;border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:5px 10px;cursor:pointer;font-size:12px;">Rename</button>
+      <button id="deleteWatchlistBtn" onclick="deleteWatchlist()" style="display:none;background:none;border:1px solid var(--red);color:var(--red);border-radius:4px;padding:5px 10px;cursor:pointer;font-size:12px;">Delete</button>
+      <span id="watchlistStatus" style="font-size:11px;color:var(--muted);font-family:var(--mono);">Loading...</span>
+    </div>
+    <!-- Watchlist filters + TF + Sort -->
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 0;">
+      <button class="filter-btn active" id="wfAll"    onclick="setWLFilter('all',this)">All</button>
+      <button class="filter-btn"        id="wfBull"   onclick="setWLFilter('bull',this)">▲ Trend Bull</button>
+      <button class="filter-btn"        id="wfBear"   onclick="setWLFilter('bear',this)">▼ Trend Bear</button>
+      <button class="filter-btn"        id="wfBBull"  onclick="setWLFilter('bbull',this)" style="border-color:var(--green-border);color:var(--green);">▲ B:Bull</button>
+      <button class="filter-btn"        id="wfBBear"  onclick="setWLFilter('bbear',this)" style="border-color:var(--red-border);color:var(--red);">▼ B:Bear</button>
+      <button class="filter-btn"        id="wfLGold"  onclick="setWLFilter('lgold',this)" style="border-color:var(--amber-border);color:var(--amber);">★ L:Gold</button>
+      <button class="filter-btn"        id="wfLBlue"  onclick="setWLFilter('lblue',this)" style="border-color:var(--blue-border);color:var(--blue);">● L:Blue</button>
+      <button class="filter-btn has-tip" id="wfTriple" onclick="setWLFilter('triple',this)" style="border-color:var(--accent);color:var(--accent);font-weight:600;" data-tip="Triple Bull: Trend bullish + B bullish + L gold on selected timeframe">&#9889; Triple Bull</button>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
+        <select id="wlSortSelect" onchange="setWLSort(this.value)" style="background:var(--bg2);color:var(--fg);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:11px;">
+          <option value="">Sort: Default</option>
+          <option value="az">Ticker A-Z</option>
+          <option value="chg_d">% Chg Down</option>
+          <option value="chg_a">% Chg Up</option>
+          <option value="bflip_d">B Flip Recent</option>
+          <option value="lflip_d">L Flip Recent</option>
+        </select>
+        <select class="sort-select" id="wlTFSelect" onchange="setWLTF(this.value)" style="border-color:var(--accent);color:var(--accent);">
+          <option value="2H">Timeframe: 2H</option>
+          <option value="4H">Timeframe: 4H</option>
+          <option value="D" selected>Timeframe: Daily</option>
+          <option value="W">Timeframe: Weekly</option>
+          <option value="M">Timeframe: Monthly</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th class="r">Price</th>
+            <th class="r">% Chg</th>
+            <th class="r">52W</th>
+            <th class="c">Trend</th>
+            <th class="c">B</th>
+            <th class="c" style="font-size:10px;">B Flip</th>
+            <th class="c">L</th>
+            <th class="c" style="font-size:10px;">L Flip</th>
+            <th class="c" style="width:60px;">Remove</th>
+          </tr>
+        </thead>
+        <tbody id="watchlistTbody">
+          <tr class="state-row"><td colspan="10">Select or create a watchlist above.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div><!-- /paneWatchlist2 -->
 
   <!-- PORTFOLIO PANE -->
   <div class="tab-pane" id="panePortfolio">
@@ -524,7 +591,7 @@ function getChgPct(r) { return curTF==='2H'?(r.chgPct2h||r.chgPct4h||r.chgPct):c
 function getTfChg(r)  { return curTF==='2H'?(r.chg2h||r.chg4h||r.chg):curTF==='4H'?(r.chg4h||r.chg):curTF==='W'?(r.chgW||r.chg):curTF==='M'?(r.chgM||r.chg):r.chg; }
 
 // -- INIT ----------------------------------------------------------------------
-window.addEventListener('DOMContentLoaded', () => { loadFromSupabase(); loadPortfolios().then(() => render()); });
+window.addEventListener('DOMContentLoaded', () => { loadFromSupabase(); Promise.all([loadPortfolios(), loadWatchlists()]).then(() => render()); });
 
 // -- SUPABASE READ -------------------------------------------------------------
 async function loadFromSupabase() {
@@ -703,6 +770,8 @@ function render() {
   else if (curSort === 'lflip_a')  rows.sort((a,b) => parseDateStr(getLFlip(a)) - parseDateStr(getLFlip(b)));
   else if (curSort === 'in_d') rows.sort((a,b) => { const la=getPortfolioLabel(a.sym).replace(/<[^>]+>/g,''); const lb=getPortfolioLabel(b.sym).replace(/<[^>]+>/g,''); return lb.localeCompare(la); });
   else if (curSort === 'in_a') rows.sort((a,b) => { const la=getPortfolioLabel(a.sym).replace(/<[^>]+>/g,''); const lb=getPortfolioLabel(b.sym).replace(/<[^>]+>/g,''); return la.localeCompare(lb); });
+  else if (curSort === 'wl_d') rows.sort((a,b) => { const la=getWatchlistLabel(a.sym).replace(/<[^>]+>/g,''); const lb=getWatchlistLabel(b.sym).replace(/<[^>]+>/g,''); return lb.localeCompare(la); });
+  else if (curSort === 'wl_a') rows.sort((a,b) => { const la=getWatchlistLabel(a.sym).replace(/<[^>]+>/g,''); const lb=getWatchlistLabel(b.sym).replace(/<[^>]+>/g,''); return la.localeCompare(lb); });
   // Triple Bull: if no column sort active, the auto-sort inside the filter block applies
 
   // Update sort arrow indicators
@@ -758,6 +827,10 @@ function render() {
       <td class="r"><span class="price-val">${priceFmt}</span></td>
       <td class="r"><span class="${pc}">${chgSign}${Number(tfChg).toFixed(2)}</span></td>
       <td class="r"><span class="${pc}">${pctSign}${Number(tfChgPct).toFixed(2)}%</span></td>
+      <td class="c" style="width:28px;">
+        <button onclick="openAddToWatchlist('${r.sym}')" style="background:none;border:1px solid var(--muted);color:var(--muted);border-radius:3px;width:20px;height:20px;cursor:pointer;font-size:13px;line-height:1;padding:0;" title="Add to watchlist">+</button>
+      </td>
+      <td class="c" style="width:70px;font-size:10px;color:var(--muted);">${getWatchlistLabel(r.sym)}</td>
       <td class="c" style="width:28px;">
         <button onclick="openAddToPortfolio('${r.sym}')" style="background:none;border:1px solid var(--muted);color:var(--muted);border-radius:3px;width:20px;height:20px;cursor:pointer;font-size:13px;line-height:1;padding:0;" title="Add to portfolio">+</button>
       </td>
@@ -891,15 +964,18 @@ function switchTab(tab) {
   document.getElementById('paneCrypto').classList.toggle('active',     tab === 'crypto');
   document.getElementById('paneOMX').classList.toggle('active',        tab === 'omx');
   document.getElementById('panePortfolio').classList.toggle('active',  tab === 'portfolio');
+  document.getElementById('paneWatchlist2').classList.toggle('active', tab === 'watchlist2');
   document.getElementById('tabWatchlist').classList.toggle('active',   tab === 'watchlist');
   document.getElementById('tabAlerts').classList.toggle('active',      tab === 'alerts');
   document.getElementById('tabCrypto').classList.toggle('active',      tab === 'crypto');
   document.getElementById('tabOMX').classList.toggle('active',         tab === 'omx');
   document.getElementById('tabPortfolio').classList.toggle('active',   tab === 'portfolio');
+  document.getElementById('tabWatchlist2').classList.toggle('active',  tab === 'watchlist2');
   if (tab === 'alerts')    renderAlerts();
   if (tab === 'crypto'    && cryptoAllData.length === 0) loadCryptoData();
   if (tab === 'omx'       && omxAllData.length === 0)    loadOMXData();
-  if (tab === 'portfolio') loadPortfolioTab();
+  if (tab === 'portfolio')  loadPortfolioTab();
+  if (tab === 'watchlist2') loadWatchlistTab();
 }
 
 function setAlertWindow(hrs, btn) {
@@ -1425,6 +1501,14 @@ function omxRender() {
       <td class="r"><span class="price-val">${priceFmt}</span></td>
       <td class="r"><span class="${pc}">${chgSign}${Number(chgPct).toFixed(2)}%</span></td>
       <td class="c" style="width:28px;">
+        <button onclick="openAddToWatchlist('${r.sym}')" style="background:none;border:1px solid var(--muted);color:var(--muted);border-radius:3px;width:20px;height:20px;cursor:pointer;font-size:13px;line-height:1;padding:0;" title="Add to watchlist">+</button>
+      </td>
+      <td class="c" style="width:70px;font-size:10px;color:var(--muted);">${getWatchlistLabel(r.sym)}</td>
+      <td class="c" style="width:28px;">
+        <button onclick="openAddToWatchlist('${r.sym}')" style="background:none;border:1px solid var(--muted);color:var(--muted);border-radius:3px;width:20px;height:20px;cursor:pointer;font-size:13px;line-height:1;padding:0;" title="Add to watchlist">+</button>
+      </td>
+      <td class="c" style="width:70px;font-size:10px;color:var(--muted);">${getWatchlistLabel(r.sym)}</td>
+      <td class="c" style="width:28px;">
         <button onclick="openAddToPortfolio('${r.sym}')" style="background:none;border:1px solid var(--muted);color:var(--muted);border-radius:3px;width:20px;height:20px;cursor:pointer;font-size:13px;line-height:1;padding:0;" title="Add to portfolio">+</button>
       </td>
       <td class="c" style="width:70px;font-size:10px;color:var(--muted);">${getPortfolioLabel(r.sym)}</td>
@@ -1852,7 +1936,300 @@ function setPortSort(s) {
   renderPortfolioTable();
 }
 
+
+// =============================================================================
+// WATCHLIST FEATURE -- mirrors Portfolio feature exactly
+// =============================================================================
+let watchlists      = [];   // [{id, name}]
+let allWLItems      = [];   // [{id, watchlist_id, sym}]
+let activeWatchlist = null;
+let pendingWLSym    = null;
+let wlFilter        = 'all';
+let wlSort          = '';
+
+async function loadWatchlists() {
+  const [w, i] = await Promise.all([
+    supaFetch('watchlists?select=id,name,created_at&order=created_at.asc'),
+    supaFetch('watchlist_items?select=id,watchlist_id,sym'),
+  ]);
+  watchlists  = w || [];
+  allWLItems  = i || [];
+}
+
+function getWatchlistLabel(sym) {
+  const matches = allWLItems.filter(i => i.sym === sym);
+  if (matches.length === 0) return '';
+  if (matches.length === 1) {
+    const w = watchlists.find(w => w.id === matches[0].watchlist_id);
+    return w ? `<span style="color:var(--accent);font-size:10px;">${w.name}</span>` : '';
+  }
+  return '<span style="color:var(--accent);font-size:10px;">Multiple</span>';
+}
+
+function openAddToWatchlist(sym) {
+  if (watchlists.length === 0) {
+    alert('Create a watchlist first in the Watchlist tab.');
+    return;
+  }
+  pendingWLSym = sym;
+  document.getElementById('wlModalSym').textContent = sym;
+  const sel = document.getElementById('wlModalSelect');
+  sel.innerHTML = '<option value="">Select watchlist...</option>' +
+    watchlists.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+  document.getElementById('watchlistModal').style.display = 'flex';
+}
+
+function closeWLModal() {
+  document.getElementById('watchlistModal').style.display = 'none';
+  pendingWLSym = null;
+}
+
+async function confirmAddToWatchlist() {
+  const wlId = document.getElementById('wlModalSelect').value;
+  if (!wlId || !pendingWLSym) return;
+  const res = await supaFetch('watchlist_items', {
+    method: 'POST',
+    prefer: 'return=representation',
+    body: JSON.stringify({ watchlist_id: wlId, sym: pendingWLSym }),
+  });
+  if (res) {
+    allWLItems.push(...res);
+    closeWLModal();
+    render();
+    if (activeWatchlist === wlId) renderWatchlistTable();
+  }
+}
+
+function createWatchlist() {
+  const n = watchlists.length + 1;
+  document.getElementById('watchlistNameInput').value = 'Watchlist ' + n;
+  document.getElementById('createWatchlistModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('watchlistNameInput').select(), 50);
+}
+
+function closeCreateWLModal() {
+  document.getElementById('createWatchlistModal').style.display = 'none';
+}
+
+async function confirmCreateWatchlist() {
+  const name = document.getElementById('watchlistNameInput').value.trim();
+  if (!name) return;
+  const res = await supaFetch('watchlists', {
+    method: 'POST',
+    body: JSON.stringify({ name }),
+  });
+  if (res && res.length > 0) {
+    watchlists.push(res[0]);
+    closeCreateWLModal();
+    refreshWatchlistSelect();
+    selectWatchlist(res[0].id);
+    document.getElementById('watchlistStatus').textContent = `Created "${name}"`;
+  } else {
+    alert('Could not create watchlist. Name may already exist.');
+  }
+}
+
+async function deleteWatchlist() {
+  if (!activeWatchlist) return;
+  const w = watchlists.find(w => w.id === activeWatchlist);
+  if (!confirm(`Delete "${w?.name}"? This will remove all its items.`)) return;
+  await supaFetch(`watchlists?id=eq.${activeWatchlist}`, { method: 'DELETE', prefer: '' });
+  watchlists  = watchlists.filter(w => w.id !== activeWatchlist);
+  allWLItems  = allWLItems.filter(i => i.watchlist_id !== activeWatchlist);
+  activeWatchlist = null;
+  refreshWatchlistSelect();
+  renderWatchlistTable();
+  render();
+}
+
+async function renameWatchlist() {
+  if (!activeWatchlist) return;
+  const w = watchlists.find(w => w.id === activeWatchlist);
+  const newName = prompt('Rename watchlist:', w?.name || '');
+  if (!newName || newName.trim() === '' || newName.trim() === w?.name) return;
+  const res = await supaFetch(`watchlists?id=eq.${activeWatchlist}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ name: newName.trim() }),
+  });
+  if (res !== null) {
+    const idx = watchlists.findIndex(w => w.id === activeWatchlist);
+    if (idx >= 0) watchlists[idx].name = newName.trim();
+    refreshWatchlistSelect();
+    render();
+    document.getElementById('watchlistStatus').textContent = `Renamed to "${newName.trim()}"`;
+  } else {
+    alert('Could not rename. Name may already exist.');
+  }
+}
+
+async function removeWLItem(itemId, wlId, sym) {
+  await supaFetch(`watchlist_items?id=eq.${itemId}`, { method: 'DELETE', prefer: '' });
+  allWLItems = allWLItems.filter(i => i.id !== itemId);
+  renderWatchlistTable();
+  render();
+}
+
+function refreshWatchlistSelect() {
+  const sel = document.getElementById('watchlistSelect');
+  sel.innerHTML = '<option value="">Select watchlist...</option>' +
+    watchlists.map(w => `<option value="${w.id}" ${w.id===activeWatchlist?'selected':''}>${w.name}</option>`).join('');
+  const show = activeWatchlist ? 'inline-block' : 'none';
+  document.getElementById('deleteWatchlistBtn').style.display = show;
+  document.getElementById('renameWatchlistBtn').style.display = show;
+}
+
+function selectWatchlist(id) {
+  activeWatchlist = id || null;
+  refreshWatchlistSelect();
+  renderWatchlistTable();
+}
+
+function setWLFilter(f, el) {
+  wlFilter = f;
+  document.querySelectorAll('#paneWatchlist2 .filter-btn').forEach(b => {
+    b.classList.remove('active','active-bull','active-bear');
+  });
+  if (el) {
+    if (f==='bull'||f==='bbull'||f==='lgold'||f==='triple') el.classList.add('active-bull');
+    else if (f==='bear'||f==='bbear')                        el.classList.add('active-bear');
+    else                                                      el.classList.add('active');
+  }
+  renderWatchlistTable();
+}
+
+function setWLSort(s) { wlSort = s; renderWatchlistTable(); }
+
+function setWLTF(tf) { curTF = tf; renderWatchlistTable(); }
+
+function renderWatchlistTable() {
+  const tbody = document.getElementById('watchlistTbody');
+  if (!activeWatchlist) {
+    tbody.innerHTML = '<tr class="state-row"><td colspan="10">Select or create a watchlist above.</td></tr>';
+    document.getElementById('watchlistStatus').textContent = '';
+    return;
+  }
+  const items = allWLItems.filter(i => i.watchlist_id === activeWatchlist);
+  if (items.length === 0) {
+    tbody.innerHTML = '<tr class="state-row"><td colspan="10">No stocks in this watchlist yet. Use the W+ button in the Nasdaq60 or OMX50 tab.</td></tr>';
+    document.getElementById('watchlistStatus').textContent = '0 stocks';
+    return;
+  }
+
+  let rows = items.map(item => {
+    const r = allData.find(d => d.sym === item.sym);
+    return r ? Object.assign({}, r, {_iid: item.id, _wid: item.watchlist_id}) : null;
+  }).filter(Boolean);
+
+  // Filter -- same as Nasdaq60/Portfolio
+  if (wlFilter === 'bull')        rows = rows.filter(r => r.sentiment === 'bull');
+  else if (wlFilter === 'bear')   rows = rows.filter(r => r.sentiment === 'bear');
+  else if (wlFilter === 'bbull')  rows = rows.filter(r => ((r.tf||{})[curTF]||{}).b === 'bull');
+  else if (wlFilter === 'bbear')  rows = rows.filter(r => ((r.tf||{})[curTF]||{}).b === 'bear');
+  else if (wlFilter === 'lgold')  rows = rows.filter(r => ((r.tf||{})[curTF]||{}).l === 'gold');
+  else if (wlFilter === 'lblue')  rows = rows.filter(r => ((r.tf||{})[curTF]||{}).l === 'blue');
+  else if (wlFilter === 'triple') rows = rows.filter(r => {
+    const tf = (r.tf||{})[curTF]||{};
+    return r.sentiment==='bull' && tf.b==='bull' && tf.l==='gold';
+  });
+
+  // Sort
+  if (wlSort === 'chg_d')        rows.sort((a,b) => getChgPct(b)-getChgPct(a));
+  else if (wlSort === 'chg_a')   rows.sort((a,b) => getChgPct(a)-getChgPct(b));
+  else if (wlSort === 'price_d') rows.sort((a,b) => (b.price||0)-(a.price||0));
+  else if (wlSort === 'price_a') rows.sort((a,b) => (a.price||0)-(b.price||0));
+  else if (wlSort === 'az')      rows.sort((a,b) => a.sym.localeCompare(b.sym));
+  else if (wlSort === 'bflip_d') rows.sort((a,b) => parseDateStr(getBFlip(b))-parseDateStr(getBFlip(a)));
+  else if (wlSort === 'lflip_d') rows.sort((a,b) => parseDateStr(getLFlip(b))-parseDateStr(getLFlip(a)));
+
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr class="state-row"><td colspan="10">No stocks match the current filter.</td></tr>';
+    document.getElementById('watchlistStatus').textContent = `0 / ${items.length} stocks`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => {
+    const activeTF = (r.tf||{})[curTF]||{b:'neutral',l:'gray'};
+    const bSig   = activeTF.b || 'neutral';
+    const lSig   = activeTF.l || 'gray';
+    const bCls   = bSig==='bull'?'b-bull':bSig==='bear'?'b-bear':'b-neut';
+    const bLabel = bSig==='bull'?'Bullish':bSig==='bear'?'Bearish':'Neutral';
+    const lCls   = lSig==='gold'?'l-gold':lSig==='blue'?'l-blue':'l-gray';
+    const lLabel = lSig==='gold'?'Gold':lSig==='blue'?'Blue':'Gray';
+    const tfChgPct = getChgPct(r);
+    const tfChg    = getTfChg(r);
+    const pc = tfChgPct > 0.05 ? 'chg-pos' : tfChgPct < -0.05 ? 'chg-neg' : 'chg-neu';
+    const priceFmt = r.price >= 1000
+      ? '$'+r.price.toLocaleString('en-US',{maximumFractionDigits:0})
+      : '$'+Number(r.price).toFixed(2);
+    const chgSign = tfChg >= 0 ? '+' : '';
+    const pos52 = (r.hi52 && r.lo52 && r.hi52>r.lo52)
+      ? Math.max(0,Math.min(1,(r.price-r.lo52)/(r.hi52-r.lo52))) : 0.5;
+    const barColor = pos52>0.7?'var(--green)':pos52<0.3?'var(--red)':'var(--accent)';
+    const sentCls = r.sentiment==='bull'?'chg-pos':r.sentiment==='bear'?'chg-neg':'chg-neu';
+    const sentLbl = r.sentiment==='bull'?'BULL':r.sentiment==='bear'?'BEAR':'NEUT';
+    const flipCell = t => t
+      ? `<span class="flip-time">${t}</span>`
+      : `<span style="color:var(--dim);font-family:var(--mono);font-size:11px;">--</span>`;
+    return `<tr>
+      <td><div class="ticker-sym">${r.sym}</div><div class="ticker-name">${r.name}</div></td>
+      <td class="r"><span class="price-val">${priceFmt}</span></td>
+      <td class="r"><span class="${pc}">${chgSign}${Number(tfChgPct).toFixed(2)}%</span></td>
+      <td class="r">
+        <div class="w52-bar">
+          <span class="w52-pct">${Math.round(pos52*100)}%</span>
+          <div class="w52-track"><div class="w52-fill" style="width:${Math.round(pos52*100)}%;background:${barColor}"></div></div>
+        </div>
+      </td>
+      <td class="c"><span class="trend-pill ${sentCls}">${sentLbl}</span></td>
+      <td class="c"><span class="${bCls}">${bLabel}</span></td>
+      <td class="c">${flipCell(getBFlip(r))}</td>
+      <td class="c"><span class="${lCls}">${lLabel}</span></td>
+      <td class="c">${flipCell(getLFlip(r))}</td>
+      <td class="c"><button onclick="removeWLItem('${r._iid}','${r._wid}','${r.sym}')" style="background:none;border:1px solid var(--red);color:var(--red);border-radius:3px;padding:2px 7px;cursor:pointer;font-size:11px;">✕</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('watchlistStatus').textContent = `${rows.length} / ${items.length} stock${items.length!==1?'s':''}`;
+}
+
+async function loadWatchlistTab() {
+  document.getElementById('watchlistStatus').textContent = 'Loading...';
+  await loadWatchlists();
+  refreshWatchlistSelect();
+  if (watchlists.length > 0 && !activeWatchlist) {
+    activeWatchlist = watchlists[0].id;
+    refreshWatchlistSelect();
+  }
+  renderWatchlistTable();
+  render();
+}
+
 </script>
+  <!-- ADD TO WATCHLIST MODAL -->
+  <div id="watchlistModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px;min-width:280px;max-width:360px;">
+      <div style="font-size:14px;font-weight:600;margin-bottom:16px;">Add <span id="wlModalSym" style="color:var(--accent);"></span> to watchlist</div>
+      <select id="wlModalSelect" style="width:100%;background:var(--bg3);color:var(--fg);border:1px solid var(--border);border-radius:4px;padding:8px;font-size:13px;margin-bottom:12px;">
+        <option value="">Select watchlist...</option>
+      </select>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button onclick="closeWLModal()" style="background:none;border:1px solid var(--border);color:var(--fg);border-radius:4px;padding:6px 16px;cursor:pointer;font-size:12px;">Cancel</button>
+        <button onclick="confirmAddToWatchlist()" style="background:var(--accent);color:#000;border:none;border-radius:4px;padding:6px 16px;cursor:pointer;font-size:12px;font-weight:600;">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE WATCHLIST MODAL -->
+  <div id="createWatchlistModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px;min-width:280px;max-width:360px;">
+      <div style="font-size:14px;font-weight:600;margin-bottom:16px;">Create New Watchlist</div>
+      <input id="watchlistNameInput" type="text" value="Watchlist 1" style="width:100%;background:var(--bg3);color:var(--fg);border:1px solid var(--border);border-radius:4px;padding:8px;font-size:13px;margin-bottom:12px;box-sizing:border-box;" />
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button onclick="closeCreateWLModal()" style="background:none;border:1px solid var(--border);color:var(--fg);border-radius:4px;padding:6px 16px;cursor:pointer;font-size:12px;">Cancel</button>
+        <button onclick="confirmCreateWatchlist()" style="background:var(--accent);color:#000;border:none;border-radius:4px;padding:6px 16px;cursor:pointer;font-size:12px;font-weight:600;">Create</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ADD TO PORTFOLIO MODAL -->
   <div id="portfolioModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px;min-width:280px;max-width:360px;">
