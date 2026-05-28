@@ -21,7 +21,7 @@
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;line-height:1.5;}
   body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,170,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,170,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
-  .container{max-width:1340px;margin:0 auto;padding:0 24px 60px;position:relative;z-index:1;}
+  .container{max-width:1340px;margin:0 auto;padding:0 24px 60px;isolation:isolate;}
 
   header{display:flex;align-items:flex-end;justify-content:space-between;padding:8px 0 6px;border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;}
   .logo{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:0.15em;color:var(--accent);text-transform:uppercase;margin-bottom:6px;}
@@ -144,7 +144,7 @@
   footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:0.05em;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 
   /* ── TABS ── */
-  .tab-nav{display:flex;gap:0;border-bottom:1px solid var(--border);margin:4px 0 0;position:sticky;top:0;z-index:10;background:var(--bg);}  .tab-btn{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:6px 16px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;}  .tab-btn:hover{color:var(--text);}  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}  .alert-star{margin-left:4px;font-size:12px;transition:color 0.3s;}  .tab-pane{display:none;}  .tab-pane.active{display:block;}
+  .tab-nav{display:flex;gap:0;border-bottom:1px solid var(--border);margin:4px 0 0;position:-webkit-sticky;position:sticky;top:0;z-index:100;background:var(--bg);}  .tab-btn{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:6px 16px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;}  .tab-btn:hover{color:var(--text);}  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}  .alert-star{margin-left:4px;font-size:12px;transition:color 0.3s;}  .tab-pane{display:none;}  .tab-pane.active{display:block;}
   /* ── ALERTS TAB ── */
   .alert-controls{display:flex;align-items:center;gap:12px;padding:16px 0 12px;flex-wrap:wrap;}  .alert-label{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:0.05em;}  .alert-window-btn{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 14px;cursor:pointer;transition:all 0.15s;letter-spacing:0.05em;}  .alert-window-btn:hover{border-color:var(--border2);color:var(--text);}  .alert-window-btn.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600;}  .alert-count{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:auto;}  .alert-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:grid;grid-template-columns:1fr auto auto auto auto;align-items:center;gap:16px;transition:background 0.1s;margin-bottom:8px;}  .alert-card:hover{background:var(--bg3);border-color:var(--border2);}  .alert-card-ticker{font-family:var(--mono);font-weight:700;font-size:14px;}  .alert-card-name{font-size:11px;color:var(--muted);margin-top:2px;}  .alert-card-price{font-family:var(--mono);font-size:13px;font-weight:500;text-align:right;}  .alert-card-chg{font-family:var(--mono);font-size:12px;text-align:right;}  .alert-flip-info{text-align:right;}  .alert-flip-label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);}  .alert-flip-time{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600;}  .alert-badges{display:flex;gap:6px;justify-content:flex-end;}  .alert-empty{text-align:center;padding:60px;font-family:var(--mono);font-size:12px;color:var(--muted);}  .alert-empty-icon{font-size:32px;margin-bottom:12px;opacity:0.4;}  .alert-section-title{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--dim);margin:16px 0 8px;}
   @media(max-width:640px){h1{font-size:20px;}.api-setup{flex-wrap:wrap;}.api-setup input{width:100%;}header{flex-direction:column;align-items:flex-start;}}
@@ -194,7 +194,7 @@
   <div class="tab-pane active" id="paneWatchlist">
 
   <!-- SUMMARY: compact single-line chips -->
-  <div style="display:flex;gap:6px;flex-wrap:wrap;padding:3px 0;border-bottom:1px solid var(--border);align-items:center;position:sticky;top:34px;z-index:9;background:var(--bg);">
+  <div style="display:flex;gap:6px;flex-wrap:wrap;padding:3px 0;border-bottom:1px solid var(--border);align-items:center;">
     <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">▲ Trend <span class="green" id="sBull" style="font-weight:700;">—</span></span>
     <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">▼ Trend <span class="red" id="sBear" style="font-weight:700;">—</span></span>
     <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">B Bull <span class="green" id="sBBull" style="font-weight:700;">—</span></span>
@@ -204,7 +204,7 @@
   </div>
 
   <!-- CONTROLS -->
-  <div class="controls" style="position:sticky;top:52px;z-index:9;background:var(--bg);">
+  <div class="controls">
     <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
     <button class="filter-btn" onclick="setFilter('bull',this)">▲ Trend Bull</button>
     <button class="filter-btn" onclick="setFilter('bear',this)">▼ Trend Bear</button>
@@ -348,7 +348,7 @@
   <div class="tab-pane" id="paneOMX">
 
     <!-- Summary: compact inline chips matching Nasdaq60 -->
-    <div style="display:flex;gap:6px;flex-wrap:wrap;padding:3px 0;border-bottom:1px solid var(--border);align-items:center;position:sticky;top:34px;z-index:9;background:var(--bg);">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;padding:3px 0;border-bottom:1px solid var(--border);align-items:center;">
       <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">B Bull <span class="green" id="osBBull" style="font-weight:700;">--</span></span>
       <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">B Bear <span class="red" id="osBBear" style="font-weight:700;">--</span></span>
       <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">L Gold <span style="color:var(--amber);font-weight:700;" id="osLGold">--</span></span>
@@ -366,7 +366,7 @@
       <button class="filter-btn" onclick="setOMXFilter('bbear',this)" style="border-color:var(--red-border);color:var(--red);">&#9660; B:Bear</button>
       <button class="filter-btn" onclick="setOMXFilter('lgold',this)" style="border-color:var(--amber-border);color:var(--amber);">&#9733; L:Gold</button>
       <button class="filter-btn" onclick="setOMXFilter('lblue',this)" style="border-color:var(--blue-border);color:var(--blue);">&#9679; L:Blue</button>
-      <button class="filter-btn" onclick="setOMXFilter('triple',this)" style="border-color:var(--accent);color:var(--accent);font-weight:600;">&#9889; Triple Bull</button>
+      <button class="filter-btn has-tip" onclick="setOMXFilter('triple',this)" style="border-color:var(--accent);color:var(--accent);font-weight:600;" data-tip="Triple Bull: Trend bullish + B bullish + L gold on selected timeframe">&#9889; Triple Bull</button>
       <select class="sort-select" id="omxTfSelect" onchange="setOMXTF(this.value)" style="border-color:var(--accent);color:var(--accent);">
         <option value="2H">Timeframe: 2H</option>
         <option value="4H">Timeframe: 4H</option>
@@ -1433,7 +1433,9 @@ function omxRender() {
   let rows = [...omxAllData];
 
   // Filter
-  if (omxCurFilter === 'bbull')  rows = rows.filter(r => ((r.tf||{})[omxCurTF]||{}).b === 'bull');
+  if (omxCurFilter === 'bull')    rows = rows.filter(r => r.sentiment === 'bull');
+  else if (omxCurFilter === 'bear')   rows = rows.filter(r => r.sentiment === 'bear');
+  else if (omxCurFilter === 'bbull')  rows = rows.filter(r => ((r.tf||{})[omxCurTF]||{}).b === 'bull');
   else if (omxCurFilter === 'bbear')  rows = rows.filter(r => ((r.tf||{})[omxCurTF]||{}).b === 'bear');
   else if (omxCurFilter === 'lgold')  rows = rows.filter(r => ((r.tf||{})[omxCurTF]||{}).l === 'gold');
   else if (omxCurFilter === 'lblue')  rows = rows.filter(r => ((r.tf||{})[omxCurTF]||{}).l === 'blue');
@@ -1502,10 +1504,6 @@ function omxRender() {
       <td><div class="ticker-sym">${r.sym.replace('.ST','')}</div><div class="ticker-name">${r.name}</div></td>
       <td class="r"><span class="price-val">${priceFmt}</span></td>
       <td class="r"><span class="${pc}">${chgSign}${Number(chgPct).toFixed(2)}%</span></td>
-      <td class="c" style="width:28px;">
-        <button onclick="openAddToWatchlist('${r.sym}')" style="background:none;border:1px solid var(--muted);color:var(--muted);border-radius:3px;width:20px;height:20px;cursor:pointer;font-size:13px;line-height:1;padding:0;" title="Add to watchlist">+</button>
-      </td>
-      <td class="c" style="width:70px;font-size:10px;color:var(--muted);">${getWatchlistLabel(r.sym)}</td>
       <td class="c" style="width:28px;">
         <button onclick="openAddToWatchlist('${r.sym}')" style="background:none;border:1px solid var(--muted);color:var(--muted);border-radius:3px;width:20px;height:20px;cursor:pointer;font-size:13px;line-height:1;padding:0;" title="Add to watchlist">+</button>
       </td>
@@ -1618,9 +1616,7 @@ async function loadOMXData() {
     }));
 
     if (statusEl && omxAllData.length > 0) {
-      const latest = priceData.reduce((a,b) => new Date(a.updated_at)>new Date(b.updated_at)?a:b);
-      const updTime = new Date(latest.updated_at).toLocaleString('en-GB',{timeZone:'Europe/Stockholm',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-      statusEl.textContent = `Updated: ${updTime} CET`;
+      statusEl.textContent = `${omxAllData.length} stocks loaded`;
     } else if (statusEl) {
       statusEl.textContent = 'No OMX data yet -- deploy omx-processor';
     }
