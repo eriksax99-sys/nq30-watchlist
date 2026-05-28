@@ -23,11 +23,11 @@
   body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,170,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,170,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
   .container{max-width:1340px;margin:0 auto;padding:0 24px 60px;position:relative;z-index:1;}
 
-  header{display:flex;align-items:flex-end;justify-content:space-between;padding:16px 0 14px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap;}
+  header{display:flex;align-items:flex-end;justify-content:space-between;padding:8px 0 6px;border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;}
   .logo{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:0.15em;color:var(--accent);text-transform:uppercase;margin-bottom:6px;}
   h1{font-family:var(--mono);font-size:22px;font-weight:600;letter-spacing:-0.02em;}
   h1 span{color:var(--accent);}
-  .header-meta{font-size:12px;color:var(--muted);margin-top:6px;font-family:var(--mono);}
+  .header-meta{font-size:12px;color:var(--muted);margin-top:2px;font-family:var(--mono);}
   .header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
   .api-setup{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;}
   .api-setup label{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;}
@@ -47,7 +47,7 @@
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
 
   /* LEGEND */
-  .legend{display:flex;gap:8px;padding:8px 0 6px;flex-wrap:wrap;border-bottom:1px solid var(--border);}
+  .legend{display:flex;gap:8px;padding:4px 0 3px;flex-wrap:wrap;border-bottom:1px solid var(--border);}
   .legend-group{display:flex;align-items:center;gap:10px;}
   .legend-title{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--dim);margin-right:2px;}
   .legend-item{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--muted);}
@@ -64,7 +64,7 @@
   .sum-val.amber{color:var(--amber);}
   .sum-sub{font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--mono);}
 
-  .controls{display:flex;align-items:center;gap:8px;padding:12px 0;flex-wrap:wrap;}
+  .controls{display:flex;align-items:center;gap:8px;padding:6px 0;flex-wrap:wrap;}
   .filter-btn{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 12px;cursor:pointer;transition:all 0.15s;letter-spacing:0.05em;}
   .filter-btn:hover{border-color:var(--border2);color:var(--text);}
   .filter-btn.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600;}
@@ -144,7 +144,7 @@
   footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:0.05em;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 
   /* ── TABS ── */
-  .tab-nav{display:flex;gap:0;border-bottom:1px solid var(--border);margin:20px 0 0;}  .tab-btn{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:10px 20px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;}  .tab-btn:hover{color:var(--text);}  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}  .alert-star{margin-left:4px;font-size:12px;transition:color 0.3s;}  .tab-pane{display:none;}  .tab-pane.active{display:block;}
+  .tab-nav{display:flex;gap:0;border-bottom:1px solid var(--border);margin:4px 0 0;}  .tab-btn{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:6px 16px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;}  .tab-btn:hover{color:var(--text);}  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}  .alert-star{margin-left:4px;font-size:12px;transition:color 0.3s;}  .tab-pane{display:none;}  .tab-pane.active{display:block;}
   /* ── ALERTS TAB ── */
   .alert-controls{display:flex;align-items:center;gap:12px;padding:16px 0 12px;flex-wrap:wrap;}  .alert-label{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:0.05em;}  .alert-window-btn{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 14px;cursor:pointer;transition:all 0.15s;letter-spacing:0.05em;}  .alert-window-btn:hover{border-color:var(--border2);color:var(--text);}  .alert-window-btn.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600;}  .alert-count{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:auto;}  .alert-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:grid;grid-template-columns:1fr auto auto auto auto;align-items:center;gap:16px;transition:background 0.1s;margin-bottom:8px;}  .alert-card:hover{background:var(--bg3);border-color:var(--border2);}  .alert-card-ticker{font-family:var(--mono);font-weight:700;font-size:14px;}  .alert-card-name{font-size:11px;color:var(--muted);margin-top:2px;}  .alert-card-price{font-family:var(--mono);font-size:13px;font-weight:500;text-align:right;}  .alert-card-chg{font-family:var(--mono);font-size:12px;text-align:right;}  .alert-flip-info{text-align:right;}  .alert-flip-label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);}  .alert-flip-time{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600;}  .alert-badges{display:flex;gap:6px;justify-content:flex-end;}  .alert-empty{text-align:center;padding:60px;font-family:var(--mono);font-size:12px;color:var(--muted);}  .alert-empty-icon{font-size:32px;margin-bottom:12px;opacity:0.4;}  .alert-section-title{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--dim);margin:16px 0 8px;}
   @media(max-width:640px){h1{font-size:20px;}.api-setup{flex-wrap:wrap;}.api-setup input{width:100%;}header{flex-direction:column;align-items:flex-start;}}
@@ -255,7 +255,7 @@
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='chgabs_d'?'chgabs_a':'chgabs_d')" title="Sort by absolute change">Chg</th>
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='chg_d'?'chg_a':'chg_d')" title="Sort by % change">% Chg</th>
           <th class="c" style="width:28px;" title="Add to portfolio">+</th>
-          <th class="c" style="width:70px;font-size:10px;">In</th>
+          <th class="c" style="width:70px;font-size:10px;cursor:pointer;" onclick="setSort(curSort==='in_d'?'in_a':'in_d')">In</th>
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='w52_d'?'w52_a':'w52_d')" title="Sort by 52-week range position">52W</th>
           <th class="c">Trend</th>
           <th class="c b-col has-tip" data-tip="B = Momentum signal. SMMA21 of close with ATR14×2.5 volatility band. State-based and sticky.">B</th>
@@ -433,7 +433,7 @@
             <th class="r" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='price_d'?'price_a':'price_d')" title="Sort by Price">Price</th>
             <th class="r" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='chg_d'?'chg_a':'chg_d')" title="Sort by % change">Chg %</th>
             <th class="c" style="width:28px;" title="Add to portfolio">+</th>
-            <th class="c" style="width:70px;font-size:10px;">In</th>
+            <th class="c" style="width:70px;font-size:10px;cursor:pointer;" onclick="setSort(curSort==='in_d'?'in_a':'in_d')">In</th>
             <th class="r" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='w52_d'?'w52_a':'w52_d')" title="Sort by 52-week position">52W</th>
             <th class="c" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='trend_d'?'trend_a':'trend_d')">Trend</th>
             <th class="c b-col has-tip" data-tip="B signal: bull/bear based on highest-high / lowest-low + ATR14x2.5 bands">B</th>
@@ -466,7 +466,8 @@
       <select id="portfolioSelect" onchange="selectPortfolio(this.value)" style="background:var(--bg2);color:var(--fg);border:1px solid var(--border);border-radius:4px;padding:5px 10px;font-size:12px;">
         <option value="">Select portfolio...</option>
       </select>
-      <button id="deletePortfolioBtn" onclick="deletePortfolio()" style="display:none;background:none;border:1px solid var(--red);color:var(--red);border-radius:4px;padding:5px 10px;cursor:pointer;font-size:12px;">Delete Portfolio</button>
+      <button id="renamePortfolioBtn" onclick="renamePortfolio()" style="display:none;background:none;border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:5px 10px;cursor:pointer;font-size:12px;">Rename</button>
+      <button id="deletePortfolioBtn" onclick="deletePortfolio()" style="display:none;background:none;border:1px solid var(--red);color:var(--red);border-radius:4px;padding:5px 10px;cursor:pointer;font-size:12px;">Delete</button>
       <span id="portfolioStatus" style="font-size:11px;color:var(--muted);font-family:var(--mono);">Loading...</span>
     </div>
     <!-- Portfolio filters + TF -->
@@ -725,6 +726,8 @@ function render() {
   else if (curSort === 'bflip_a')  rows.sort((a,b) => parseDateStr(getBFlip(a)) - parseDateStr(getBFlip(b)));
   else if (curSort === 'lflip_d')  rows.sort((a,b) => parseDateStr(getLFlip(b)) - parseDateStr(getLFlip(a)));
   else if (curSort === 'lflip_a')  rows.sort((a,b) => parseDateStr(getLFlip(a)) - parseDateStr(getLFlip(b)));
+  else if (curSort === 'in_d') rows.sort((a,b) => { const la=getPortfolioLabel(a.sym).replace(/<[^>]+>/g,''); const lb=getPortfolioLabel(b.sym).replace(/<[^>]+>/g,''); return lb.localeCompare(la); });
+  else if (curSort === 'in_a') rows.sort((a,b) => { const la=getPortfolioLabel(a.sym).replace(/<[^>]+>/g,''); const lb=getPortfolioLabel(b.sym).replace(/<[^>]+>/g,''); return la.localeCompare(lb); });
   // Triple Bull: if no column sort active, the auto-sort inside the filter block applies
 
   // Update sort arrow indicators
@@ -1706,6 +1709,26 @@ async function deletePortfolio() {
   render(); // refresh "In" column
 }
 
+async function renamePortfolio() {
+  if (!activePortfolio) return;
+  const p = portfolios.find(p => p.id === activePortfolio);
+  const newName = prompt('Rename portfolio:', p?.name || '');
+  if (!newName || newName.trim() === '' || newName.trim() === p?.name) return;
+  const res = await supaFetch(`portfolios?id=eq.${activePortfolio}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ name: newName.trim() }),
+  });
+  if (res !== null) {
+    const idx = portfolios.findIndex(p => p.id === activePortfolio);
+    if (idx >= 0) portfolios[idx].name = newName.trim();
+    refreshPortfolioSelect();
+    render(); // refresh "In" column
+    document.getElementById('portfolioStatus').textContent = `Renamed to "${newName.trim()}"`;
+  } else {
+    alert('Could not rename. Name may already exist.');
+  }
+}
+
 // Remove a single holding
 async function removeHolding(holdingId, portfolioId, sym) {
   await supaFetch(`holdings?id=eq.${holdingId}`, { method: 'DELETE', prefer: '' });
@@ -1719,6 +1742,7 @@ function refreshPortfolioSelect() {
   sel.innerHTML = '<option value="">Select portfolio...</option>' +
     portfolios.map(p => `<option value="${p.id}" ${p.id===activePortfolio?'selected':''}>${p.name}</option>`).join('');
   document.getElementById('deletePortfolioBtn').style.display = activePortfolio ? 'inline-block' : 'none';
+  document.getElementById('renamePortfolioBtn').style.display = activePortfolio ? 'inline-block' : 'none';
 }
 
 function selectPortfolio(id) {
@@ -1740,97 +1764,82 @@ function renderPortfolioTable() {
     document.getElementById('portfolioStatus').textContent = '0 stocks';
     return;
   }
-  // Apply filter -- TF-aware using raw signal fields
-  const filteredHoldings = holdings.filter(holding => {
-    const r = allData.find(d => d.sym === holding.sym);
-    if (!r) return portFilter === 'all';
-    // Get TF-aware signals from raw data
-    const raw = (window._rawData || []).find(d => d.sym === holding.sym) || {};
-    const bSig = curTF==='2H'?(raw.b_2h||raw.b_d): curTF==='4H'?(raw.b_4h||raw.b_d):
-                 curTF==='W'?(raw.b_w||raw.b_d): curTF==='M'?(raw.b_m||raw.b_d): raw.b_d;
-    const lSig = curTF==='2H'?(raw.l_2h||raw.l_d): curTF==='4H'?(raw.l_4h||raw.l_d):
-                 curTF==='W'?(raw.l_w||raw.l_d): curTF==='M'?(raw.l_m||raw.l_d): raw.l_d;
-    if (portFilter === 'all')    return true;
-    if (portFilter === 'bull')   return r.sentiment === 'bull';
-    if (portFilter === 'bear')   return r.sentiment === 'bear';
-    if (portFilter === 'bbull')  return bSig === 'bull';
-    if (portFilter === 'bbear')  return bSig === 'bear';
-    if (portFilter === 'lgold')  return lSig === 'gold';
-    if (portFilter === 'lblue')  return lSig === 'blue';
-    if (portFilter === 'triple') return r.sentiment==='bull' && bSig==='bull' && lSig==='gold';
-    return true;
+
+  // Build rows from allData -- attach holding id for remove button
+  let rows = holdings.map(h => {
+    const r = allData.find(d => d.sym === h.sym);
+    return r ? Object.assign({}, r, {_hid: h.id, _pid: h.portfolio_id}) : null;
+  }).filter(Boolean);
+
+  // Filter -- exact same logic as Nasdaq60
+  if (portFilter === 'bull')        rows = rows.filter(r => r.sentiment === 'bull');
+  else if (portFilter === 'bear')   rows = rows.filter(r => r.sentiment === 'bear');
+  else if (portFilter === 'bbull')  rows = rows.filter(r => ((r.tf||{})[curTF]||{}).b === 'bull');
+  else if (portFilter === 'bbear')  rows = rows.filter(r => ((r.tf||{})[curTF]||{}).b === 'bear');
+  else if (portFilter === 'lgold')  rows = rows.filter(r => ((r.tf||{})[curTF]||{}).l === 'gold');
+  else if (portFilter === 'lblue')  rows = rows.filter(r => ((r.tf||{})[curTF]||{}).l === 'blue');
+  else if (portFilter === 'triple') rows = rows.filter(r => {
+    const tf = (r.tf||{})[curTF]||{};
+    return r.sentiment==='bull' && tf.b==='bull' && tf.l==='gold';
   });
 
-  if (filteredHoldings.length === 0) {
+  // Sort -- exact same logic as Nasdaq60
+  if (portSort === 'chg_d')        rows.sort((a,b) => getChgPct(b)-getChgPct(a));
+  else if (portSort === 'chg_a')   rows.sort((a,b) => getChgPct(a)-getChgPct(b));
+  else if (portSort === 'price_d') rows.sort((a,b) => (b.price||0)-(a.price||0));
+  else if (portSort === 'price_a') rows.sort((a,b) => (a.price||0)-(b.price||0));
+  else if (portSort === 'az')      rows.sort((a,b) => a.sym.localeCompare(b.sym));
+  else if (portSort === 'bflip_d') rows.sort((a,b) => parseDateStr(getBFlip(b))-parseDateStr(getBFlip(a)));
+  else if (portSort === 'lflip_d') rows.sort((a,b) => parseDateStr(getLFlip(b))-parseDateStr(getLFlip(a)));
+
+  if (rows.length === 0) {
     tbody.innerHTML = '<tr class="state-row"><td colspan="10">No stocks match the current filter.</td></tr>';
     document.getElementById('portfolioStatus').textContent = `0 / ${holdings.length} stocks`;
     return;
   }
 
-  // Apply sort
-  if (portSort) {
-    filteredHoldings.sort((a, b) => {
-      const ra = allData.find(d => d.sym === a.sym);
-      const rb = allData.find(d => d.sym === b.sym);
-      if (!ra || !rb) return 0;
-      if (portSort === 'az')     return ra.sym.localeCompare(rb.sym);
-      if (portSort === 'chg_d')  return (ra.chgPct||0) - (rb.chgPct||0);
-      if (portSort === 'chg_a')  return (rb.chgPct||0) - (ra.chgPct||0);
-      if (portSort === 'bflip_d') return parseDateStr(getBFlip(rb)) - parseDateStr(getBFlip(ra));
-      if (portSort === 'lflip_d') return parseDateStr(getLFlip(rb)) - parseDateStr(getLFlip(ra));
-      return 0;
-    });
-  }
-
-  // Get stock data from allData for each holding
-  const rows = filteredHoldings.map(holding => {
-    const r = allData.find(d => d.sym === holding.sym);
-    if (!r) return `<tr><td>${holding.sym}</td><td colspan="9" style="color:var(--muted);font-size:11px;">Data not available</td></tr>`;
+  tbody.innerHTML = rows.map(r => {
+    const activeTF = (r.tf||{})[curTF]||{b:'neutral',l:'gray'};
+    const bSig   = activeTF.b || 'neutral';
+    const lSig   = activeTF.l || 'gray';
+    const bCls   = bSig==='bull'?'b-bull':bSig==='bear'?'b-bear':'b-neut';
+    const bLabel = bSig==='bull'?'Bullish':bSig==='bear'?'Bearish':'Neutral';
+    const lCls   = lSig==='gold'?'l-gold':lSig==='blue'?'l-blue':'l-gray';
+    const lLabel = lSig==='gold'?'Gold':lSig==='blue'?'Blue':'Gray';
     const tfChgPct = getChgPct(r);
-    const pc = tfChgPct >= 0 ? 'pos' : 'neg';
-    const pctSign = tfChgPct >= 0 ? '+' : '';
+    const tfChg    = getTfChg(r);
+    const pc = tfChgPct > 0.05 ? 'chg-pos' : tfChgPct < -0.05 ? 'chg-neg' : 'chg-neu';
     const priceFmt = r.price >= 1000
       ? '$'+r.price.toLocaleString('en-US',{maximumFractionDigits:0})
       : '$'+Number(r.price).toFixed(2);
+    const chgSign = tfChg >= 0 ? '+' : '';
     const pos52 = (r.hi52 && r.lo52 && r.hi52>r.lo52)
       ? Math.max(0,Math.min(1,(r.price-r.lo52)/(r.hi52-r.lo52))) : 0.5;
     const barColor = pos52>0.7?'var(--green)':pos52<0.3?'var(--red)':'var(--accent)';
-    const sent = r.sentiment;
-    const badgeCls = sent==='bull'?'badge-bull':sent==='bear'?'badge-bear':'badge-neut';
-    const badgeLabel = sent==='bull'?' BULL':sent==='bear'?' BEAR':' NEUT';
-    // TF-aware B/L signals for portfolio display
-    const raw = (window._rawData || []).find(d => d.sym === holding.sym) || {};
-    const bSigTF = curTF==='2H'?(raw.b_2h||raw.b_d): curTF==='4H'?(raw.b_4h||raw.b_d):
-                   curTF==='W'?(raw.b_w||raw.b_d): curTF==='M'?(raw.b_m||raw.b_d): raw.b_d;
-    const lSigTF = curTF==='2H'?(raw.l_2h||raw.l_d): curTF==='4H'?(raw.l_4h||raw.l_d):
-                   curTF==='W'?(raw.l_w||raw.l_d): curTF==='M'?(raw.l_m||raw.l_d): raw.l_d;
-    const bCls = bSigTF==='bull'?'sig-bull':bSigTF==='bear'?'sig-bear':'sig-neut';
-    const bLabel = bSigTF==='bull'?'●':bSigTF==='bear'?'●':'○';
-    const lCls = lSigTF==='gold'?'sig-gold':lSigTF==='blue'?'sig-blue':'sig-gray';
-    const lLabel = lSigTF==='gold'?'●':lSigTF==='blue'?'●':'○';
-    const flipCell = (t) => t
-      ? `<span class="flip-time" style="font-size:11px;">${t}</span>`
+    const sentCls = r.sentiment==='bull'?'chg-pos':r.sentiment==='bear'?'chg-neg':'chg-neu';
+    const sentLbl = r.sentiment==='bull'?'BULL':r.sentiment==='bear'?'BEAR':'NEUT';
+    const flipCell = t => t
+      ? `<span class="flip-time">${t}</span>`
       : `<span style="color:var(--dim);font-family:var(--mono);font-size:11px;">--</span>`;
     return `<tr>
       <td><div class="ticker-sym">${r.sym}</div><div class="ticker-name">${r.name}</div></td>
       <td class="r"><span class="price-val">${priceFmt}</span></td>
-      <td class="r"><span class="${pc}">${pctSign}${Number(tfChgPct).toFixed(2)}%</span></td>
+      <td class="r"><span class="${pc}">${chgSign}${Number(tfChgPct).toFixed(2)}%</span></td>
       <td class="r">
         <div class="w52-bar">
           <span class="w52-pct">${Math.round(pos52*100)}%</span>
           <div class="w52-track"><div class="w52-fill" style="width:${Math.round(pos52*100)}%;background:${barColor}"></div></div>
         </div>
       </td>
-      <td class="c"><span class="badge ${badgeCls}">${badgeLabel}</span></td>
+      <td class="c"><span class="trend-pill ${sentCls}">${sentLbl}</span></td>
       <td class="c"><span class="${bCls}">${bLabel}</span></td>
       <td class="c">${flipCell(getBFlip(r))}</td>
       <td class="c"><span class="${lCls}">${lLabel}</span></td>
       <td class="c">${flipCell(getLFlip(r))}</td>
-      <td class="c"><button onclick="removeHolding('${holding.id}','${holding.portfolio_id}','${holding.sym}')" style="background:none;border:1px solid var(--red);color:var(--red);border-radius:3px;padding:2px 7px;cursor:pointer;font-size:11px;">✕</button></td>
+      <td class="c"><button onclick="removeHolding('${r._hid}','${r._pid}','${r.sym}')" style="background:none;border:1px solid var(--red);color:var(--red);border-radius:3px;padding:2px 7px;cursor:pointer;font-size:11px;">✕</button></td>
     </tr>`;
   }).join('');
-  tbody.innerHTML = rows;
-  document.getElementById('portfolioStatus').textContent = `${filteredHoldings.length} / ${holdings.length} stock${holdings.length!==1?'s':''}`;
+  document.getElementById('portfolioStatus').textContent = `${rows.length} / ${holdings.length} stock${holdings.length!==1?'s':''}`;
 }
 
 async function loadPortfolioTab() {
