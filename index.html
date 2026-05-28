@@ -185,6 +185,7 @@
     <button class="tab-btn active" id="tabWatchlist" onclick="switchTab('watchlist')">Nasdaq60</button>
     <button class="tab-btn" id="tabOMX" onclick="switchTab('omx')">OMX50</button>
     <button class="tab-btn" id="tabCrypto" onclick="switchTab('crypto')">Crypto50</button>
+    <button class="tab-btn" id="tabPortfolio" onclick="switchTab('portfolio')">Portfolio</button>
     <button class="tab-btn" id="tabAlerts" onclick="switchTab('alerts')" style="margin-left:auto;">&#9889; Alerts<span id="alertStar" class="alert-star" style="color:var(--green)">&#9733;</span></button>
   </nav>
 
@@ -253,6 +254,8 @@
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='price_d'?'price_a':'price_d')" title="Sort by Price">Price</th>
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='chgabs_d'?'chgabs_a':'chgabs_d')" title="Sort by absolute change">Chg</th>
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='chg_d'?'chg_a':'chg_d')" title="Sort by % change">% Chg</th>
+          <th class="c" style="width:28px;" title="Add to portfolio">+</th>
+          <th class="c" style="width:70px;font-size:10px;">In</th>
           <th class="r" style="cursor:pointer;" onclick="setSort(curSort==='w52_d'?'w52_a':'w52_d')" title="Sort by 52-week range position">52W</th>
           <th class="c">Trend</th>
           <th class="c b-col has-tip" data-tip="B = Momentum signal. SMMA21 of close with ATR14×2.5 volatility band. State-based and sticky.">B</th>
@@ -263,7 +266,7 @@
         </tr>
       </thead>
       <tbody id="tbody">
-        <tr class="state-row"><td colspan="12">Loading data from database…</td></tr>
+        <tr class="state-row"><td colspan="14">Loading data from database…</td></tr>
       </tbody>
     </table>
   </div>
@@ -454,6 +457,39 @@
 
   </div><!-- /paneOMX -->
 
+  <!-- PORTFOLIO PANE -->
+  <div class="tab-pane" id="panePortfolio">
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0 8px;flex-wrap:wrap;">
+      <button onclick="createPortfolio()" style="background:var(--accent);color:#000;border:none;border-radius:4px;padding:6px 14px;cursor:pointer;font-size:12px;font-weight:600;">+ New Portfolio</button>
+      <select id="portfolioSelect" onchange="selectPortfolio(this.value)" style="background:var(--bg2);color:var(--fg);border:1px solid var(--border);border-radius:4px;padding:5px 10px;font-size:12px;">
+        <option value="">Select portfolio...</option>
+      </select>
+      <button id="deletePortfolioBtn" onclick="deletePortfolio()" style="display:none;background:none;border:1px solid var(--red);color:var(--red);border-radius:4px;padding:5px 10px;cursor:pointer;font-size:12px;">Delete Portfolio</button>
+      <span id="portfolioStatus" style="font-size:11px;color:var(--muted);font-family:var(--mono);">Loading...</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th class="r">Price</th>
+            <th class="r">% Chg</th>
+            <th class="r">52W</th>
+            <th class="c">Trend</th>
+            <th class="c">B</th>
+            <th class="c" style="font-size:10px;">B Flip</th>
+            <th class="c">L</th>
+            <th class="c" style="font-size:10px;">L Flip</th>
+            <th class="c" style="width:60px;">Remove</th>
+          </tr>
+        </thead>
+        <tbody id="portfolioTbody">
+          <tr class="state-row"><td colspan="10">Select or create a portfolio above.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div><!-- /panePortfolio -->
+
   <footer>
     <span>GEESTMAN'S NQ60 WATCHLIST · POWERED BY SUPABASE + YAHOO FINANCE</span>
     <span>DATA UPDATES EVERY 30 MIN · NOT FINANCIAL ADVICE</span>
@@ -482,7 +518,7 @@ function getChgPct(r) { return curTF==='2H'?(r.chgPct2h||r.chgPct4h||r.chgPct):c
 function getTfChg(r)  { return curTF==='2H'?(r.chg2h||r.chg4h||r.chg):curTF==='4H'?(r.chg4h||r.chg):curTF==='W'?(r.chgW||r.chg):curTF==='M'?(r.chgM||r.chg):r.chg; }
 
 // -- INIT ----------------------------------------------------------------------
-window.addEventListener('DOMContentLoaded', () => { loadFromSupabase(); });
+window.addEventListener('DOMContentLoaded', () => { loadFromSupabase(); loadPortfolios().then(() => render()); });
 
 // -- SUPABASE READ -------------------------------------------------------------
 async function loadFromSupabase() {
@@ -713,6 +749,10 @@ function render() {
       <td class="r"><span class="price-val">${priceFmt}</span></td>
       <td class="r"><span class="${pc}">${chgSign}${Number(tfChg).toFixed(2)}</span></td>
       <td class="r"><span class="${pc}">${pctSign}${Number(tfChgPct).toFixed(2)}%</span></td>
+      <td class="c" style="width:28px;">
+        <button onclick="openAddToPortfolio('${r.sym}')" style="background:none;border:1px solid var(--muted);color:var(--muted);border-radius:3px;width:20px;height:20px;cursor:pointer;font-size:13px;line-height:1;padding:0;" title="Add to portfolio">+</button>
+      </td>
+      <td class="c" style="width:70px;font-size:10px;color:var(--muted);">${getPortfolioLabel(r.sym)}</td>
       <td class="r">
         <div class="w52-bar">
           <span class="w52-pct">${Math.round(pos52*100)}%</span>
@@ -837,17 +877,20 @@ let alertWindowHrs = 1;
 
 function switchTab(tab) {
   curTab = tab;
-  document.getElementById('paneWatchlist').classList.toggle('active', tab === 'watchlist');
-  document.getElementById('paneAlerts').classList.toggle('active',    tab === 'alerts');
-  document.getElementById('paneCrypto').classList.toggle('active',    tab === 'crypto');
-  document.getElementById('paneOMX').classList.toggle('active',       tab === 'omx');
-  document.getElementById('tabWatchlist').classList.toggle('active',  tab === 'watchlist');
-  document.getElementById('tabAlerts').classList.toggle('active',     tab === 'alerts');
-  document.getElementById('tabCrypto').classList.toggle('active',     tab === 'crypto');
-  document.getElementById('tabOMX').classList.toggle('active',        tab === 'omx');
-  if (tab === 'alerts') renderAlerts();
-  if (tab === 'crypto' && cryptoAllData.length === 0) loadCryptoData();
-  if (tab === 'omx'    && omxAllData.length === 0)    loadOMXData();
+  document.getElementById('paneWatchlist').classList.toggle('active',  tab === 'watchlist');
+  document.getElementById('paneAlerts').classList.toggle('active',     tab === 'alerts');
+  document.getElementById('paneCrypto').classList.toggle('active',     tab === 'crypto');
+  document.getElementById('paneOMX').classList.toggle('active',        tab === 'omx');
+  document.getElementById('panePortfolio').classList.toggle('active',  tab === 'portfolio');
+  document.getElementById('tabWatchlist').classList.toggle('active',   tab === 'watchlist');
+  document.getElementById('tabAlerts').classList.toggle('active',      tab === 'alerts');
+  document.getElementById('tabCrypto').classList.toggle('active',      tab === 'crypto');
+  document.getElementById('tabOMX').classList.toggle('active',         tab === 'omx');
+  document.getElementById('tabPortfolio').classList.toggle('active',   tab === 'portfolio');
+  if (tab === 'alerts')    renderAlerts();
+  if (tab === 'crypto'    && cryptoAllData.length === 0) loadCryptoData();
+  if (tab === 'omx'       && omxAllData.length === 0)    loadOMXData();
+  if (tab === 'portfolio') loadPortfolioTab();
 }
 
 function setAlertWindow(hrs, btn) {
@@ -1498,6 +1541,251 @@ setInterval(() => {
   }
 }, 5 * 60 * 1000);
 
+
+// =============================================================================
+// PORTFOLIO FEATURE
+// =============================================================================
+const SUPA_URL = 'https://ixcwtfrelsyjjiribpeo.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4Y3d0ZnJlbHN5amppcmlicGVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0Mjk4MzMsImV4cCI6MjA5NTAwNTgzM30.KvvGWXbI91uH7PA-Nbj33BRqEUziXkt1el2a5ihf9Zg';
+
+let portfolios      = [];   // [{id, name}]
+let allHoldings     = [];   // [{id, portfolio_id, sym}]
+let activePortfolio = null; // currently selected portfolio id
+let pendingAddSym   = null; // sym waiting to be added to portfolio
+
+async function supaFetch(path, opts={}) {
+  const res = await fetch(SUPA_URL + '/rest/v1/' + path, {
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': opts.prefer || 'return=representation',
+    },
+    ...opts
+  });
+  if (!res.ok) { console.error('supaFetch error', res.status, await res.text()); return null; }
+  const ct = res.headers.get('content-type') || '';
+  return ct.includes('json') ? res.json() : null;
+}
+
+// Load portfolios and holdings from Supabase
+async function loadPortfolios() {
+  const [p, h] = await Promise.all([
+    supaFetch('portfolios?select=id,name,created_at&order=created_at.asc'),
+    supaFetch('holdings?select=id,portfolio_id,sym'),
+  ]);
+  portfolios  = p || [];
+  allHoldings = h || [];
+}
+
+// Returns label for the "In" column for a given sym
+function getPortfolioLabel(sym) {
+  const matches = allHoldings.filter(h => h.sym === sym);
+  if (matches.length === 0) return '';
+  if (matches.length === 1) {
+    const p = portfolios.find(p => p.id === matches[0].portfolio_id);
+    return p ? `<span style="color:var(--accent);font-size:10px;">${p.name}</span>` : '';
+  }
+  return '<span style="color:var(--accent);font-size:10px;">Multiple</span>';
+}
+
+// Open add-to-portfolio modal
+function openAddToPortfolio(sym) {
+  if (portfolios.length === 0) {
+    alert('Create a portfolio first in the Portfolio tab.');
+    return;
+  }
+  pendingAddSym = sym;
+  document.getElementById('modalSym').textContent = sym;
+  const sel = document.getElementById('modalPortfolioSelect');
+  sel.innerHTML = '<option value="">Select portfolio...</option>' +
+    portfolios.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  document.getElementById('portfolioModal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('portfolioModal').style.display = 'none';
+  pendingAddSym = null;
+}
+
+async function confirmAddToPortfolio() {
+  const portfolioId = document.getElementById('modalPortfolioSelect').value;
+  if (!portfolioId || !pendingAddSym) return;
+  const res = await supaFetch('holdings', {
+    method: 'POST',
+    prefer: 'return=representation',
+    body: JSON.stringify({ portfolio_id: portfolioId, sym: pendingAddSym }),
+  });
+  if (res) {
+    allHoldings.push(...res);
+    closeModal();
+    render(); // refresh "In" column
+    if (activePortfolio === portfolioId) renderPortfolioTable();
+  }
+}
+
+// Create portfolio modal
+function createPortfolio() {
+  // Set default name: "Portfolio N"
+  const n = portfolios.length + 1;
+  document.getElementById('portfolioNameInput').value = 'Portfolio ' + n;
+  document.getElementById('createPortfolioModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('portfolioNameInput').select(), 50);
+}
+
+function closeCreateModal() {
+  document.getElementById('createPortfolioModal').style.display = 'none';
+}
+
+async function confirmCreatePortfolio() {
+  const name = document.getElementById('portfolioNameInput').value.trim();
+  if (!name) return;
+  const res = await supaFetch('portfolios', {
+    method: 'POST',
+    body: JSON.stringify({ name }),
+  });
+  if (res && res.length > 0) {
+    portfolios.push(res[0]);
+    closeCreateModal();
+    refreshPortfolioSelect();
+    selectPortfolio(res[0].id);
+    document.getElementById('portfolioStatus').textContent = `Created "${name}"`;
+  } else {
+    alert('Could not create portfolio. Name may already exist.');
+  }
+}
+
+// Delete portfolio
+async function deletePortfolio() {
+  if (!activePortfolio) return;
+  const p = portfolios.find(p => p.id === activePortfolio);
+  if (!confirm(`Delete "${p?.name}"? This will remove all its holdings.`)) return;
+  await supaFetch(`portfolios?id=eq.${activePortfolio}`, { method: 'DELETE', prefer: '' });
+  portfolios  = portfolios.filter(p => p.id !== activePortfolio);
+  allHoldings = allHoldings.filter(h => h.portfolio_id !== activePortfolio);
+  activePortfolio = null;
+  refreshPortfolioSelect();
+  renderPortfolioTable();
+  render(); // refresh "In" column
+}
+
+// Remove a single holding
+async function removeHolding(holdingId, portfolioId, sym) {
+  await supaFetch(`holdings?id=eq.${holdingId}`, { method: 'DELETE', prefer: '' });
+  allHoldings = allHoldings.filter(h => h.id !== holdingId);
+  renderPortfolioTable();
+  render(); // refresh "In" column
+}
+
+function refreshPortfolioSelect() {
+  const sel = document.getElementById('portfolioSelect');
+  sel.innerHTML = '<option value="">Select portfolio...</option>' +
+    portfolios.map(p => `<option value="${p.id}" ${p.id===activePortfolio?'selected':''}>${p.name}</option>`).join('');
+  document.getElementById('deletePortfolioBtn').style.display = activePortfolio ? 'inline-block' : 'none';
+}
+
+function selectPortfolio(id) {
+  activePortfolio = id || null;
+  refreshPortfolioSelect();
+  renderPortfolioTable();
+}
+
+function renderPortfolioTable() {
+  const tbody = document.getElementById('portfolioTbody');
+  if (!activePortfolio) {
+    tbody.innerHTML = '<tr class="state-row"><td colspan="10">Select or create a portfolio above.</td></tr>';
+    document.getElementById('portfolioStatus').textContent = '';
+    return;
+  }
+  const holdings = allHoldings.filter(h => h.portfolio_id === activePortfolio);
+  if (holdings.length === 0) {
+    tbody.innerHTML = '<tr class="state-row"><td colspan="10">No stocks in this portfolio yet. Use the + button in the Nasdaq60 tab.</td></tr>';
+    document.getElementById('portfolioStatus').textContent = '0 stocks';
+    return;
+  }
+  // Get stock data from allData for each holding
+  const rows = holdings.map(holding => {
+    const r = allData.find(d => d.sym === holding.sym);
+    if (!r) return `<tr><td>${holding.sym}</td><td colspan="9" style="color:var(--muted);font-size:11px;">Data not available</td></tr>`;
+    const tfChgPct = getChgPct(r);
+    const pc = tfChgPct >= 0 ? 'pos' : 'neg';
+    const pctSign = tfChgPct >= 0 ? '+' : '';
+    const priceFmt = r.price >= 1000
+      ? '$'+r.price.toLocaleString('en-US',{maximumFractionDigits:0})
+      : '$'+Number(r.price).toFixed(2);
+    const pos52 = (r.hi52 && r.lo52 && r.hi52>r.lo52)
+      ? Math.max(0,Math.min(1,(r.price-r.lo52)/(r.hi52-r.lo52))) : 0.5;
+    const barColor = pos52>0.7?'var(--green)':pos52<0.3?'var(--red)':'var(--accent)';
+    const sent = r.sentiment;
+    const badgeCls = sent==='bull'?'badge-bull':sent==='bear'?'badge-bear':'badge-neut';
+    const badgeLabel = sent==='bull'?' BULL':sent==='bear'?' BEAR':' NEUT';
+    const bCls = r.bSignal==='bull'?'sig-bull':r.bSignal==='bear'?'sig-bear':'sig-neut';
+    const bLabel = r.bSignal==='bull'?'●':r.bSignal==='bear'?'●':'○';
+    const lCls = r.lSignal==='gold'?'sig-gold':r.lSignal==='blue'?'sig-blue':'sig-gray';
+    const lLabel = r.lSignal==='gold'?'●':r.lSignal==='blue'?'●':'○';
+    const flipCell = (t) => t
+      ? `<span class="flip-time" style="font-size:11px;">${t}</span>`
+      : `<span style="color:var(--dim);font-family:var(--mono);font-size:11px;">--</span>`;
+    return `<tr>
+      <td><div class="ticker-sym">${r.sym}</div><div class="ticker-name">${r.name}</div></td>
+      <td class="r"><span class="price-val">${priceFmt}</span></td>
+      <td class="r"><span class="${pc}">${pctSign}${Number(tfChgPct).toFixed(2)}%</span></td>
+      <td class="r">
+        <div class="w52-bar">
+          <span class="w52-pct">${Math.round(pos52*100)}%</span>
+          <div class="w52-track"><div class="w52-fill" style="width:${Math.round(pos52*100)}%;background:${barColor}"></div></div>
+        </div>
+      </td>
+      <td class="c"><span class="badge ${badgeCls}">${badgeLabel}</span></td>
+      <td class="c"><span class="${bCls}">${bLabel}</span></td>
+      <td class="c">${flipCell(getBFlip(r))}</td>
+      <td class="c"><span class="${lCls}">${lLabel}</span></td>
+      <td class="c">${flipCell(getLFlip(r))}</td>
+      <td class="c"><button onclick="removeHolding('${holding.id}','${holding.portfolio_id}','${holding.sym}')" style="background:none;border:1px solid var(--red);color:var(--red);border-radius:3px;padding:2px 7px;cursor:pointer;font-size:11px;">✕</button></td>
+    </tr>`;
+  }).join('');
+  tbody.innerHTML = rows;
+  document.getElementById('portfolioStatus').textContent = `${holdings.length} stock${holdings.length!==1?'s':''}`;
+}
+
+async function loadPortfolioTab() {
+  document.getElementById('portfolioStatus').textContent = 'Loading...';
+  await loadPortfolios();
+  refreshPortfolioSelect();
+  if (portfolios.length > 0 && !activePortfolio) {
+    activePortfolio = portfolios[0].id;
+    refreshPortfolioSelect();
+  }
+  renderPortfolioTable();
+  render(); // refresh "In" column in Nasdaq60
+}
+
 </script>
+  <!-- ADD TO PORTFOLIO MODAL -->
+  <div id="portfolioModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px;min-width:280px;max-width:360px;">
+      <div style="font-size:14px;font-weight:600;margin-bottom:16px;">Add <span id="modalSym" style="color:var(--accent);"></span> to portfolio</div>
+      <select id="modalPortfolioSelect" style="width:100%;background:var(--bg3);color:var(--fg);border:1px solid var(--border);border-radius:4px;padding:8px;font-size:13px;margin-bottom:12px;">
+        <option value="">Select portfolio...</option>
+      </select>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button onclick="closeModal()" style="background:none;border:1px solid var(--border);color:var(--fg);border-radius:4px;padding:6px 16px;cursor:pointer;font-size:12px;">Cancel</button>
+        <button onclick="confirmAddToPortfolio()" style="background:var(--accent);color:#000;border:none;border-radius:4px;padding:6px 16px;cursor:pointer;font-size:12px;font-weight:600;">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE PORTFOLIO MODAL -->
+  <div id="createPortfolioModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px;min-width:280px;max-width:360px;">
+      <div style="font-size:14px;font-weight:600;margin-bottom:16px;">Create New Portfolio</div>
+      <input id="portfolioNameInput" type="text" value="Portfolio 1" style="width:100%;background:var(--bg3);color:var(--fg);border:1px solid var(--border);border-radius:4px;padding:8px;font-size:13px;margin-bottom:12px;box-sizing:border-box;" />
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button onclick="closeCreateModal()" style="background:none;border:1px solid var(--border);color:var(--fg);border-radius:4px;padding:6px 16px;cursor:pointer;font-size:12px;">Cancel</button>
+        <button onclick="confirmCreatePortfolio()" style="background:var(--accent);color:#000;border:none;border-radius:4px;padding:6px 16px;cursor:pointer;font-size:12px;font-weight:600;">Create</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
