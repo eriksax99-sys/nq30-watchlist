@@ -285,70 +285,67 @@
   <!-- ==================== CRYPTO TAB ==================== -->
   <div class="tab-pane" id="paneCrypto">
 
-    <!-- Summary cards -->
-    <div class="sum-grid" id="cryptoSumGrid">
-      <div class="sum-card"><div class="sum-val green" id="csBBull">--</div><div class="sum-label">B Bullish</div><div class="sum-sub">B signal</div></div>
-      <div class="sum-card"><div class="sum-val red"   id="csBBear">--</div><div class="sum-label">B Bearish</div><div class="sum-sub">B signal</div></div>
-      <div class="sum-card"><div class="sum-val amber" id="csLGold">--</div><div class="sum-label">L Gold</div><div class="sum-sub">L signal</div></div>
-      <div class="sum-card"><div class="sum-val blue"  id="csLBlue">--</div><div class="sum-label">L Blue</div><div class="sum-sub">L signal</div></div>
-      <div class="sum-card"><div class="sum-val green" id="csTriple">--</div><div class="sum-label">Triple Bull</div><div class="sum-sub">B+L+Trend</div></div>
-      <div class="sum-card"><div class="sum-val muted" id="csCount">--</div><div class="sum-label">Coins</div><div class="sum-sub">loaded</div></div>
-    </div>
+  <!-- SUMMARY: compact inline chips matching Nasdaq60 -->
+  <div style="display:flex;gap:6px;flex-wrap:wrap;padding:3px 0;border-bottom:1px solid var(--border);align-items:center;position:-webkit-sticky;position:sticky;top:33px;z-index:9;background:var(--bg);">
+    <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">▲ Trend <span class="green" id="csTrendBull" style="font-weight:700;">—</span></span>
+    <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">▼ Trend <span class="red" id="csTrendBear" style="font-weight:700;">—</span></span>
+    <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">B Bull <span class="green" id="csBBull" style="font-weight:700;">—</span></span>
+    <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">B Bear <span class="red" id="csBBear" style="font-weight:700;">—</span></span>
+    <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">L Gold <span style="color:var(--amber);font-weight:700;" id="csLGold">—</span></span>
+    <span style="font-family:var(--mono);font-size:10px;color:var(--muted);">L Blue <span style="color:#4fc3f7;font-weight:700;" id="csLBlue">—</span></span>
+  </div>
 
-    <!-- Filters -->
-    <div class="toolbar" style="margin-top:12px;">
-      <button class="filter-btn active" onclick="setCryptoFilter('all',this)">All</button>
-      <button class="filter-btn" onclick="setCryptoFilter('bbull',this)" style="border-color:var(--green-border);color:var(--green);">B:Bull</button>
-      <button class="filter-btn" onclick="setCryptoFilter('bbear',this)" style="border-color:var(--red-border);color:var(--red);">B:Bear</button>
-      <button class="filter-btn" onclick="setCryptoFilter('lgold',this)" style="border-color:var(--amber-border);color:var(--amber);">&#9733; L:Gold</button>
-      <button class="filter-btn" onclick="setCryptoFilter('lblue',this)" style="border-color:var(--blue-border);color:var(--blue);">&#9679; L:Blue</button>
-      <button class="filter-btn" onclick="setCryptoFilter('triple',this)" style="border-color:var(--accent);color:var(--accent);">&#9650; Triple Bull</button>
-      <select class="sort-select" id="cryptoTfSelect" onchange="setCryptoTF(this.value)" style="margin-left:8px;border-color:var(--accent);color:var(--accent);">
-        <option value="2H">2H</option>
-        <option value="4H">4H</option>
-        <option value="D" selected>Daily</option>
-        <option value="W">Weekly</option>
-        <option value="M">Monthly</option>
-      </select>
-      <select class="sort-select" onchange="setCryptoSort(this.value)" style="margin-left:4px;">
-        <option value="">Sort: Default</option>
-        <option value="chg_d">% Change &#8595;</option>
-        <option value="chg_a">% Change &#8593;</option>
-        <option value="price_d">Price &#8595;</option>
-        <option value="price_a">Price &#8593;</option>
-        <option value="az">Ticker A-Z</option>
-        <option value="mktcap_d">Mkt Cap &#8595;</option>
-        <option value="bflip_d">B Flip &#8595;</option>
-        <option value="lflip_d">L Flip &#8595;</option>
-      </select>
-      <span id="cryptoStatus" style="margin-left:12px;font-size:11px;color:var(--muted);font-family:var(--mono);">Loading...</span>
-    </div>
+  <!-- CONTROLS -->
+  <div class="controls" style="position:-webkit-sticky;position:sticky;top:52px;z-index:9;background:var(--bg);">
+    <button class="filter-btn active" onclick="setCryptoFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setCryptoFilter('bull',this)">&#9650; Trend Bull</button>
+    <button class="filter-btn" onclick="setCryptoFilter('bear',this)">&#9660; Trend Bear</button>
+    <button class="filter-btn" onclick="setCryptoFilter('bbull',this)" style="border-color:var(--green-border);color:var(--green);">&#9650; B:Bull</button>
+    <button class="filter-btn" onclick="setCryptoFilter('bbear',this)" style="border-color:var(--red-border);color:var(--red);">&#9660; B:Bear</button>
+    <button class="filter-btn" onclick="setCryptoFilter('lgold',this)" style="border-color:var(--amber-border);color:var(--amber);">&#9733; L:Gold</button>
+    <button class="filter-btn" onclick="setCryptoFilter('lblue',this)" style="border-color:var(--blue-border);color:var(--blue);">&#9679; L:Blue</button>
+    <button class="filter-btn has-tip" onclick="setCryptoFilter('triple',this)" style="border-color:var(--accent);color:var(--accent);font-weight:600;" data-tip="Triple Bull: Trend bullish + B bullish + L gold on selected timeframe">&#9889; Triple Bull</button>
+    <select class="sort-select" id="cryptoTfSelect" onchange="setCryptoTF(this.value)" style="margin-left:0;border-color:var(--accent);color:var(--accent);">
+      <option value="2H">Timeframe: 2H</option>
+      <option value="4H">Timeframe: 4H</option>
+      <option value="D" selected>Timeframe: Daily</option>
+      <option value="W">Timeframe: Weekly</option>
+      <option value="M">Timeframe: Monthly</option>
+    </select>
+    <select class="sort-select" onchange="setCryptoSort(this.value)">
+      <option value="">Sort: Default</option>
+      <option value="chg_d">% Change &#8595;</option>
+      <option value="chg_a">% Change &#8593;</option>
+      <option value="price_d">Price &#8595;</option>
+      <option value="price_a">Price &#8593;</option>
+      <option value="az">Ticker A-Z</option>
+      <option value="bflip_d">B Flip &#8595;</option>
+      <option value="lflip_d">L Flip &#8595;</option>
+    </select>
+  </div>
 
-    <!-- Table -->
-    <div class="table-wrap" style="margin-top:8px;">
-      <table>
-        <thead>
-          <tr>
-            <th style="text-align:left;">Coin</th>
-            <th class="c">Price</th>
-            <th class="c">Chg%</th>
-            <th class="c has-tip" data-tip="52-week range position">Range</th>
-            <th class="c has-tip" data-tip="Mkt Cap (billions USD)">Cap $B</th>
-            <th class="c" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='trend_d'?'trend_a':'trend_d')">Trend</th>
-            <th class="c b-col has-tip" data-tip="B signal: bull/bear based on highest-high / lowest-low + ATR14x2.5 bands">B</th>
-            <th class="c has-tip" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='bflip_d'?'bflip_a':'bflip_d')" data-tip="Date of last B signal flip (DDMMYY HHMM)">B Flip</th>
-            <th class="c l-col has-tip" data-tip="L signal: SMMA15 vs SMMA25 on HL2. Gold = uptrend, Blue = downtrend.">L</th>
-            <th class="c has-tip" style="cursor:pointer;" onclick="setOMXSort(omxCurSort==='lflip_d'?'lflip_a':'lflip_d')" data-tip="Date of last L signal flip (DDMMYY HHMM)">L Flip</th>
-            <th class="c">Vol</th>
-          </tr>
-        </thead>
-        <tbody id="cryptoTbody">
-          <tr class="state-row"><td colspan="11">Loading crypto data...</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="cursor:pointer;" onclick="setCryptoSort(cryptoCurSort==='az'?'az_r':'az')">Coin</th>
+          <th class="r" style="cursor:pointer;" onclick="setCryptoSort(cryptoCurSort==='price_d'?'price_a':'price_d')">Price</th>
+          <th class="r" style="cursor:pointer;" onclick="setCryptoSort(cryptoCurSort==='chg_d'?'chg_a':'chg_d')">% Chg</th>
+          <th class="r" style="cursor:pointer;" onclick="setCryptoSort(cryptoCurSort==='w52_d'?'w52_a':'w52_d')" title="Sort by 52-week range position">52W</th>
+          <th class="c">Trend</th>
+          <th class="c b-col has-tip" data-tip="B = Momentum signal. Highest-high/lowest-low + ATR14x2.5 bands.">B</th>
+          <th class="c has-tip" style="font-size:10px;color:var(--green);border-bottom:2px solid var(--green-border);cursor:pointer;" onclick="setCryptoSort(cryptoCurSort==='bflip_d'?'bflip_a':'bflip_d')" data-tip="When the B signal last flipped (CET). Click to sort.">B Flip</th>
+          <th class="c l-col has-tip" data-tip="L = Ribbon signal. SMMA15 vs SMMA25 on (H+L)/2.">L</th>
+          <th class="c has-tip" style="font-size:10px;color:var(--amber);border-bottom:2px solid var(--amber-border);cursor:pointer;" onclick="setCryptoSort(cryptoCurSort==='lflip_d'?'lflip_a':'lflip_d')" data-tip="When the L signal last flipped (CET). Click to sort.">L Flip</th>
+          <th class="r">Volume</th>
+        </tr>
+      </thead>
+      <tbody id="cryptoTbody">
+        <tr class="state-row"><td colspan="10">Loading crypto data...</td></tr>
+      </tbody>
+    </table>
+  </div>
 
   </div><!-- /paneCrypto -->
 
@@ -1210,14 +1207,16 @@ function cryptoRender() {
   const tbody = document.getElementById('cryptoTbody');
   if (!tbody) return;
   if (!cryptoAllData.length) {
-    tbody.innerHTML = '<tr class="state-row"><td colspan="11">No crypto data yet. Wait for crypto-processor to run.</td></tr>';
+    tbody.innerHTML = '<tr class="state-row"><td colspan="10">No crypto data yet. Wait for crypto-processor to run.</td></tr>';
     return;
   }
 
   let rows = [...cryptoAllData];
 
   // Apply filter
-  if (cryptoCurFilter === 'bbull')  rows = rows.filter(r => ((r.tf||{})[cryptoCurTF]||{}).b === 'bull');
+  if (cryptoCurFilter === 'bull')    rows = rows.filter(r => r.sentiment === 'bull');
+  else if (cryptoCurFilter === 'bear')   rows = rows.filter(r => r.sentiment === 'bear');
+  else if (cryptoCurFilter === 'bbull')  rows = rows.filter(r => ((r.tf||{})[cryptoCurTF]||{}).b === 'bull');
   else if (cryptoCurFilter === 'bbear')  rows = rows.filter(r => ((r.tf||{})[cryptoCurTF]||{}).b === 'bear');
   else if (cryptoCurFilter === 'lgold')  rows = rows.filter(r => ((r.tf||{})[cryptoCurTF]||{}).l === 'gold');
   else if (cryptoCurFilter === 'lblue')  rows = rows.filter(r => ((r.tf||{})[cryptoCurTF]||{}).l === 'blue');
@@ -1246,46 +1245,49 @@ function cryptoRender() {
     ? `<span class="flip-time">${t}</span>`
     : `<span style="color:var(--dim)">--</span>`;
 
-  const fmtVol = v => {
-    if (!v) return '--';
-    if (v >= 1e9) return (v/1e9).toFixed(1)+'B';
-    if (v >= 1e6) return (v/1e6).toFixed(1)+'M';
-    if (v >= 1e3) return (v/1e3).toFixed(1)+'K';
-    return v.toFixed(2);
-  };
-
   tbody.innerHTML = rows.map(r => {
-    const tf       = r.tf || {};
-    const activeTF = tf[cryptoCurTF] || {b:'neutral', l:'gray'};
-    const bSig     = activeTF.b || 'neutral';
-    const lSig     = activeTF.l || 'gray';
-    const bCls     = bSig==='bull'?'b-bull':bSig==='bear'?'b-bear':'b-neut';
-    const bLabel   = bSig==='bull'?'Bullish':bSig==='bear'?'Bearish':'Neutral';
-    const lCls     = lSig==='gold'?'l-gold':lSig==='blue'?'l-blue':'l-gray';
-    const lLabel   = lSig==='gold'?'Gold':lSig==='blue'?'Blue':'Gray';
-    const chgPct   = cryptoGetChgPct(r);
-    const chg      = cryptoGetChg(r);
-    const pc       = chgPct > 0.05 ? 'chg-pos' : chgPct < -0.05 ? 'chg-neg' : 'chg-neu';
+    const activeTF = (r.tf||{})[cryptoCurTF]||{b:'neutral',l:'gray'};
+    const bSig   = activeTF.b || 'neutral';
+    const lSig   = activeTF.l || 'gray';
+    const bCls   = bSig==='bull'?'b-bull':bSig==='bear'?'b-bear':'b-neut';
+    const bLabel = bSig==='bull'?'Bullish':bSig==='bear'?'Bearish':'Neutral';
+    const lCls   = lSig==='gold'?'l-gold':lSig==='blue'?'l-blue':'l-gray';
+    const lLabel = lSig==='gold'?'Gold':lSig==='blue'?'Blue':'Gray';
+    const chgPct = cryptoGetChgPct(r);
+    const chg    = cryptoGetChg(r);
+    const pc     = chgPct > 0.05 ? 'chg-pos' : chgPct < -0.05 ? 'chg-neg' : 'chg-neu';
     const priceFmt = r.price >= 1000 ? '$'+r.price.toLocaleString('en-US',{maximumFractionDigits:0})
                    : r.price >= 1    ? '$'+Number(r.price).toFixed(2)
                    : '$'+Number(r.price).toFixed(6);
-    const chgSign  = chg >= 0 ? '+' : '';
-    const sentCls  = r.sentiment==='bull'?'chg-pos':r.sentiment==='bear'?'chg-neg':'chg-neu';
-    const sentLbl  = r.sentiment==='bull'?'BULL':r.sentiment==='bear'?'BEAR':'NEUT';
-    const pos52    = (r.hi52 && r.lo52 && r.hi52 > r.lo52)
-                   ? Math.round((r.price - r.lo52)/(r.hi52 - r.lo52)*100) : null;
-    const pos52Str = pos52 !== null ? pos52+'%' : '--';
+    const chgSign = chg >= 0 ? '+' : '';
+    const sentCls = r.sentiment==='bull'?'chg-pos':r.sentiment==='bear'?'chg-neg':'chg-neu';
+    const sentLbl = r.sentiment==='bull'?'BULL':r.sentiment==='bear'?'BEAR':'NEUT';
+    const pos52   = (r.hi52 && r.lo52 && r.hi52>r.lo52)
+                  ? Math.max(0,Math.min(1,(r.price-r.lo52)/(r.hi52-r.lo52))) : 0.5;
+    const barColor = pos52>0.7?'var(--green)':pos52<0.3?'var(--red)':'var(--accent)';
+    const fmtVol = v => {
+      if (!v) return '--';
+      if (v>=1e9) return (v/1e9).toFixed(1)+'B';
+      if (v>=1e6) return (v/1e6).toFixed(1)+'M';
+      if (v>=1e3) return (v/1e3).toFixed(1)+'K';
+      return v.toFixed(2);
+    };
     return `<tr>
-      <td><span class="sym">${r.sym}</span><span class="co-name">${r.name}</span></td>
-      <td class="c mono">${priceFmt}<br><span class="${pc}" style="font-size:11px;">${chgSign}${Number(chg).toFixed(r.price>=1?2:6)}</span></td>
-      <td class="c mono ${pc}">${chgPct >= 0 ? '+' : ''}${Number(chgPct).toFixed(2)}%</td>
-      <td class="c mono">${pos52Str}</td>
+      <td><div class="ticker-sym">${r.sym}</div><div class="ticker-name">${r.name}</div></td>
+      <td class="r"><span class="price-val">${priceFmt}</span></td>
+      <td class="r"><span class="${pc}">${chgSign}${Number(chgPct).toFixed(2)}%</span></td>
+      <td class="r">
+        <div class="w52-bar">
+          <span class="w52-pct">${Math.round(pos52*100)}%</span>
+          <div class="w52-track"><div class="w52-fill" style="width:${Math.round(pos52*100)}%;background:${barColor}"></div></div>
+        </div>
+      </td>
       <td class="c"><span class="trend-pill ${sentCls}">${sentLbl}</span></td>
       <td class="c"><span class="${bCls}">${bLabel}</span></td>
       <td class="c">${flipCell(cryptoGetBFlip(r))}</td>
       <td class="c"><span class="${lCls}">${lLabel}</span></td>
       <td class="c">${flipCell(cryptoGetLFlip(r))}</td>
-      <td class="c mono" style="font-size:11px;">${fmtVol(r.vol)}</td>
+      <td class="r" style="font-size:11px;color:var(--muted);">${fmtVol(r.vol)}</td>
     </tr>`;
   }).join('');
 
@@ -1304,12 +1306,14 @@ function cryptoRenderSummary() {
     return r.sentiment==='bull' && tf.b==='bull' && tf.l==='gold';
   }).length;
   const el = id => document.getElementById(id);
+  const bull = rows.filter(r => r.sentiment==='bull').length;
+  const bear = rows.filter(r => r.sentiment==='bear').length;
+  if (el('csTrendBull')) el('csTrendBull').textContent = bull;
+  if (el('csTrendBear')) el('csTrendBear').textContent = bear;
   if (el('csBBull')) el('csBBull').textContent = bbull;
   if (el('csBBear')) el('csBBear').textContent = bbear;
   if (el('csLGold')) el('csLGold').textContent = lgold;
   if (el('csLBlue')) el('csLBlue').textContent = lblue;
-  if (el('csTriple')) el('csTriple').textContent = triple;
-  if (el('csCount')) el('csCount').textContent = rows.length;
 }
 
 function setCryptoFilter(f, btn) {
